@@ -56,9 +56,16 @@ jobs:
           sudo mv kubeconform /usr/local/bin/
 
       - name: Install terraform-docs
+        env:
+          # Pinned (not `.../releases/latest`): the committed READMEs were
+          # generated with this version, and terraform-docs' markdown table
+          # formatting has changed between releases (e.g. separator row
+          # dash padding) -- an unpinned "latest" fetch drifts from what's
+          # committed independent of any real Terraform change, failing
+          # this hook on unrelated CI runs.
+          TERRAFORM_DOCS_VERSION: v0.19.0
         run: |
-          url=$(curl -s https://api.github.com/repos/terraform-docs/terraform-docs/releases/latest \
-            | grep browser_download_url | grep linux-amd64 | cut -d '"' -f4)
+          url="https://github.com/terraform-docs/terraform-docs/releases/download/${TERRAFORM_DOCS_VERSION}/terraform-docs-${TERRAFORM_DOCS_VERSION}-linux-amd64.tar.gz"
           curl -sL "$url" | tar xz terraform-docs
           sudo mv terraform-docs /usr/local/bin/
 
