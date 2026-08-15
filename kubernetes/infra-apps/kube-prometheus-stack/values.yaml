@@ -1,0 +1,67 @@
+# Self-hosted Prometheus + Alertmanager + Grafana. Trade-off vs. AWS-managed
+# (AMP/AMG), stated explicitly in docs/ARCHITECTURE.md: owning HA/storage/
+# upgrades of this stack ourselves is a real Day-2-toil cost, accepted here
+# for full control over retention/PromQL/dashboards. Runs PVC-backed and
+# spread across AZs with its own PDB, so observability isn't itself a
+# single point of failure during an incident.
+kube-prometheus-stack:
+  prometheus:
+    prometheusSpec:
+      replicas: 2
+      retention: 15d
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 50Gi
+      resources:
+        requests:
+          cpu: 500m
+          memory: 2Gi
+        limits:
+          memory: 4Gi
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      # Scrapes the OTel Collector's Prometheus-exporter endpoint (metrics
+      # that originated as OTLP from the-redemption).
+      additionalScrapeConfigs:
+        - job_name: otel-collector
+          kubernetes_sd_configs:
+            - role: endpoints
+              namespaces:
+                names: [observability]
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_service_name]
+              regex: otel-collector.*
+              action: keep
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1
+
+  alertmanager:
+    alertmanagerSpec:
+      replicas: 2
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1
+
+  grafana:
+    replicas: 2
+    persistence:
+      enabled: true
+      size: 10Gi
+    additionalDataSources:
+      - name: Tempo
+        type: tempo
+        url: http://tempo.observability.svc.cluster.local:3100
+        access: proxy
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1

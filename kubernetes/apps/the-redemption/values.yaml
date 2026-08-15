@@ -1,0 +1,60 @@
+# Defaults here are for local `helm lint`/`helm template` testing. In the
+# real deployment, ArgoCD's Application (terraform/modules/argocd) injects
+# environment/ingress.wafAclArn via valuesObject, overriding these -- that's
+# the seam between Terraform-owned infra and GitOps-owned app config
+# documented in docs/ARCHITECTURE.md. No serviceAccount.roleArn here: EKS
+# Pod Identity pairs this ServiceAccount with its IAM role entirely on the
+# AWS side, so there's nothing to inject into the chart for it.
+
+image:
+  # Placeholder standing in for the real application image -- business
+  # logic is explicitly out of scope for this build. Any simple HTTP server
+  # that exposes /healthz works here for testing the platform.
+  repository: hashicorp/http-echo
+  tag: "1.0"
+
+# Steady-state floor. KEDA (kubernetes/infra-apps/keda) governs scaling
+# beyond this once installed -- this is what keeps on-demand-baseline nodes
+# present (Karpenter itself holds no floor of its own; see
+# docs/ARCHITECTURE.md's node-management section).
+replicaCount: 3
+
+environment: prod
+port: 8080
+
+ingress:
+  # Placeholder default; ArgoCD injects the real WAF ACL ARN.
+  wafAclArn: ""
+  host: redemption.example.com
+
+otel:
+  collectorEndpoint: "http://otel-collector.observability.svc.cluster.local:4317"
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    memory: 512Mi
+
+autoscaling:
+  maxReplicaCount: 60
+  # KEDA cron pre-warm for *known* flash sales -- see docs/ARCHITECTURE.md.
+  # Fill in the real sale calendar; example shown is a placeholder recurring
+  # Friday window, kept in sync with the NodePool disruption-budget
+  # blackout windows in terraform/modules/karpenter/main.tf.
+  flashSale:
+    cronStart: "0 12 * * 5"
+    cronEnd: "0 14 * * 5"
+    desiredReplicas: 30
+
+pdb:
+  minAvailable: "66%"
+
+network:
+  # Used by the NetworkPolicy's ingress ipBlock -- must match
+  # terraform/envs/prod/foundation's vpc_cidr.
+  vpcCidr: "10.0.0.0/16"
+
+prometheus:
+  address: "http://kube-prometheus-stack-prometheus.observability.svc.cluster.local:9090"

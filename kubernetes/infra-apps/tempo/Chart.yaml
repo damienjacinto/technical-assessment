@@ -1,0 +1,8 @@
+apiVersion: v2
+name: tempo
+description: Wrapper chart pinning upstream Grafana Tempo for GitOps deployment via ArgoCD
+version: 0.1.0
+dependencies:
+  - name: tempo
+    version: "1.10.1"
+    repository: "https://grafana.github.io/helm-charts"

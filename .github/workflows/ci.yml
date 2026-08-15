@@ -1,0 +1,65 @@
+##############################################################################
+# Runs the exact same checks as `pre-commit run --all-files` locally (see
+# .pre-commit-config.yaml) -- one config, one source of truth, so a clean
+# local run and a green CI run mean the same thing. If a check needs to
+# change, it changes in .pre-commit-config.yaml, not in two places that
+# can drift apart from each other.
+##############################################################################
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pre-commit:
+    name: pre-commit (terraform fmt/validate/tflint/checkov/docs, helm, kubeconform)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.10"
+          terraform_wrapper: false
+
+      - name: Set up TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v0.54.0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install checkov
+        run: pip install checkov
+
+      - name: Install kubeconform
+        run: |
+          curl -sL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz \
+            | tar xz kubeconform
+          sudo mv kubeconform /usr/local/bin/
+
+      - name: Install terraform-docs
+        run: |
+          url=$(curl -s https://api.github.com/repos/terraform-docs/terraform-docs/releases/latest \
+            | grep browser_download_url | grep linux-amd64 | cut -d '"' -f4)
+          curl -sL "$url" | tar xz terraform-docs
+          sudo mv terraform-docs /usr/local/bin/
+
+      - uses: pre-commit/action@v3.0.1

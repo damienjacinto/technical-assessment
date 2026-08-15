@@ -1,0 +1,8 @@
+apiVersion: v2
+name: argo-rollouts
+description: Wrapper chart pinning upstream Argo Rollouts for GitOps deployment via ArgoCD
+version: 0.1.0
+dependencies:
+  - name: argo-rollouts
+    version: "2.38.0"
+    repository: "https://argoproj.github.io/argo-helm"

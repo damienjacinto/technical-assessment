@@ -1,0 +1,13 @@
+# Values nested under "keda:" -- the dependency name in Chart.yaml.
+keda:
+  resources:
+    operator:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+      limits:
+        cpu: 500m
+        memory: 500Mi
+  podDisruptionBudget:
+    operator:
+      minAvailable: 1

@@ -1,0 +1,21 @@
+# Copy to terraform.tfvars and fill in real values before `terraform apply`.
+
+project     = "redemption"
+environment = "prod"
+aws_region  = "us-east-1"
+
+# Leave empty to auto-select the first 3 available AZs in aws_region, or
+# pin explicitly:
+# azs = ["us-east-1a", "us-east-1b", "us-east-1c"]
+
+vpc_cidr = "10.0.0.0/16"
+# Latest-minus-one EKS version, not bleeding edge -- see the versioning
+# policy in terraform/modules/eks/variables.tf and docs/ARCHITECTURE.md.
+cluster_version = "1.35"
+
+# Least privilege: your office/VPN/CI runner CIDR ranges. Never 0.0.0.0/0
+# for a revenue-critical cluster's public API endpoint.
+public_endpoint_allowed_cidrs = ["203.0.113.0/24"]
+
+owner      = "sre"
+repository = "https://github.com/CHANGEME/technical-assessment"

@@ -1,0 +1,13 @@
+# Lower than the-redemption's own PriorityClass (see
+# kubernetes/apps/the-redemption/templates/ -- the app runs at default/unset
+# priority, which is higher than this negative value), so the scheduler
+# always preempts capacity-buffer pods first when real traffic needs room.
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: capacity-buffer
+value: -1
+globalDefault: false
+description: >-
+  Overprovisioning placeholder pods. Freely, instantly preemptible --
+  never used by real workloads.

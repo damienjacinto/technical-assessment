@@ -1,0 +1,130 @@
+# Argo Rollouts canary, not a plain Deployment -- automated analysis gates
+# each step and auto-rolls-back on SLO breach, which is the concrete answer
+# to "recover from a bad deployment with minimal customer impact."
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: the-redemption
+  namespace: the-redemption
+  labels:
+    {{- include "the-redemption.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: the-redemption
+  strategy:
+    canary:
+      analysis:
+        templates:
+          - templateName: the-redemption-success-rate-and-latency
+        startingStep: 1
+        args:
+          - name: service-name
+            value: the-redemption
+      steps:
+        - setWeight: 10
+        - pause: { duration: 2m }
+        - analysis: {}
+        - setWeight: 25
+        - pause: { duration: 5m }
+        - setWeight: 50
+        - pause: { duration: 5m }
+        - setWeight: 100
+  template:
+    metadata:
+      labels:
+        {{- include "the-redemption.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: the-redemption
+      # Zone-level: hard requirement -- this is the actual resilience
+      # boundary the assessment names (AZ outage). minDomains: 3 matters at
+      # low replica counts (e.g. steady-state before a sale): without it, 2
+      # replicas could trivially "satisfy" even skew touching only 2 of 3
+      # zones. Node-level: soft, so it doesn't fight Karpenter's
+      # bin-packing/consolidation for a blast-radius boundary the
+      # assessment doesn't name.
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          minDomains: 3
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: the-redemption
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: the-redemption
+      containers:
+        - name: the-redemption
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - name: http
+              containerPort: {{ .Values.port }}
+          env:
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: {{ .Values.otel.collectorEndpoint | quote }}
+            - name: OTEL_SERVICE_NAME
+              value: the-redemption
+            - name: ENVIRONMENT
+              value: {{ .Values.environment | quote }}
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+---
+# Queried by the canary's analysis step above. The "args.service-name"
+# placeholder in the PromQL below is Argo Rollouts' OWN templating syntax,
+# resolved at AnalysisRun time -- escaped in the query strings so Helm
+# renders it literally instead of trying to evaluate it as a Helm value path.
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: the-redemption-success-rate-and-latency
+  namespace: the-redemption
+  labels:
+    {{- include "the-redemption.labels" . | nindent 4 }}
+spec:
+  args:
+    - name: service-name
+  metrics:
+    - name: error-rate
+      interval: 1m
+      successCondition: result[0] <= 0.01
+      failureLimit: 3
+      provider:
+        prometheus:
+          address: {{ .Values.prometheus.address }}
+          query: |
+            sum(rate(http_requests_total{job="{{ "{{args.service-name}}" }}",status=~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total{job="{{ "{{args.service-name}}" }}"}[5m]))
+    - name: p99-latency-seconds
+      interval: 1m
+      successCondition: result[0] <= 0.5
+      failureLimit: 3
+      provider:
+        prometheus:
+          address: {{ .Values.prometheus.address }}
+          query: |
+            histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job="{{ "{{args.service-name}}" }}"}[5m])) by (le))

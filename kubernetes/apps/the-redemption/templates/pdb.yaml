@@ -1,0 +1,12 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: the-redemption
+  namespace: the-redemption
+  labels:
+    {{- include "the-redemption.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.pdb.minAvailable | quote }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: the-redemption

@@ -1,0 +1,9 @@
+apiVersion: v2
+name: the-redemption
+description: >-
+  Business-critical hotel-points-deduction microservice. Compute/platform
+  concerns only -- business logic is out of scope for this build (see
+  docs/ARCHITECTURE.md); the container image is a placeholder standing in
+  for the real application.
+version: 0.1.0
+appVersion: "1.0.0"

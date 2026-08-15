@@ -1,0 +1,55 @@
+# Gateway deployment (not a per-node DaemonSet agent): the-redemption's pods
+# push OTLP directly here via OTEL_EXPORTER_OTLP_ENDPOINT (set in the app's
+# Rollout template), the Collector fans out metrics -> Prometheus and
+# traces -> Tempo. Single instrumentation/collection layer for both, per
+# docs/ARCHITECTURE.md.
+opentelemetry-collector:
+  mode: deployment
+  replicaCount: 2
+
+  image:
+    repository: otel/opentelemetry-collector-contrib
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
+
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+    exporters:
+      # Prometheus scrapes this Collector's /metrics endpoint (see
+      # kube-prometheus-stack's ServiceMonitor for the Collector in that
+      # chart's values.yaml).
+      prometheus:
+        endpoint: 0.0.0.0:8889
+      otlp/tempo:
+        endpoint: tempo.observability.svc.cluster.local:4317
+        tls:
+          insecure: true
+    service:
+      pipelines:
+        metrics:
+          receivers: [otlp]
+          exporters: [prometheus]
+        traces:
+          receivers: [otlp]
+          exporters: [otlp/tempo]
+
+  ports:
+    metrics:
+      enabled: true
+      containerPort: 8889
+      servicePort: 8889

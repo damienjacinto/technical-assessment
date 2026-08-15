@@ -1,0 +1,48 @@
+# Overprovisioning / "pause pod" buffer for *unplanned* spikes -- see
+# docs/ARCHITECTURE.md. The KEDA cron trigger only pre-warms for *known*
+# flash sales; an unplanned surge still pays the Karpenter node-provisioning
+# tax (30s-2min) before the reactive Prometheus trigger catches up. These
+# placeholder pods sit on spot-burst continuously, occupying roughly one
+# node's worth of headroom, so real traffic can preempt them in seconds
+# instead of waiting on a fresh node.
+#
+# Deliberately no PodDisruptionBudget in this directory -- these pods must
+# be freely, instantly evictable. A PDB would defeat the entire point.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: capacity-buffer
+  labels:
+    app.kubernetes.io/name: capacity-buffer
+    app.kubernetes.io/part-of: redemption
+    app.kubernetes.io/managed-by: argocd
+    environment: prod
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: capacity-buffer
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: capacity-buffer
+        app.kubernetes.io/part-of: redemption
+        environment: prod
+    spec:
+      priorityClassName: capacity-buffer
+      terminationGracePeriodSeconds: 0
+      nodeSelector:
+        capacity-tier: spot-burst
+      containers:
+        - name: pause
+          image: registry.k8s.io/pause:3.9
+          resources:
+            requests:
+              # ~roughly one node's worth of headroom, split across
+              # replicas -- tune against the instance types in the
+              # spot-burst NodePool.
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

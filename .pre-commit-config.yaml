@@ -1,0 +1,79 @@
+# pre-commit run --all-files    to check everything once
+# pre-commit install             to run automatically on every commit
+#
+# Mirrors .github/workflows/ci.yml: terraform fmt/validate, Kyverno-
+# equivalent policy-as-code for the Terraform side (tflint + checkov), and
+# the same helm lint/template/kubeconform pass used to verify this repo.
+# Local findings here should never surprise anyone in CI -- if it fails
+# here, it fails there.
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: check-added-large-files
+      - id: detect-private-key
+      - id: check-yaml
+        name: check-yaml (static manifests only)
+        description: >-
+          Helm chart templates/ directories use Go template syntax, which
+          isn't valid raw YAML until rendered -- those are checked
+          separately by validate-kubernetes below, not here.
+        exclude: '/templates/'
+
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.108.1
+    hooks:
+      - id: terraform_fmt
+      - id: terraform_validate
+        exclude: '^terraform/modules/'
+        args:
+          - --hook-config=--retry-once-with-cleanup=true
+      - id: terraform_tflint
+        args:
+          - --args=--config=__GIT_WORKING_DIR__/.tflint.hcl
+      - id: terraform_checkov
+        args:
+          - --args=--config-file=__GIT_WORKING_DIR__/.checkov.yaml
+          - --args=--compact
+          - --args=--quiet
+      - id: terraform_docs
+        # Only the 8 reusable child modules get a generated README --
+        # the 3 root stacks (bootstrap, envs/prod/{foundation,platform})
+        # are compositions documented by the top-level README.md and
+        # docs/ARCHITECTURE.md instead, not standalone modules with an
+        # inputs/outputs contract worth auto-documenting the same way.
+        files: '^terraform/modules/'
+        args:
+          # Relative, not __GIT_WORKING_DIR__-prefixed like the hooks
+          # above: this specific hook's own script (hooks/terraform_docs.sh
+          # in antonbabenko/pre-commit-terraform) already prepends $(pwd)
+          # to whatever follows --config= (to support relative config
+          # paths across its own per-module-directory pushd/popd loop) --
+          # an already-absolute __GIT_WORKING_DIR__ path would get that
+          # prepended a second time, doubling the path and failing to
+          # find the file. Confirmed by reading that script directly,
+          # not assumed.
+          - --args=--config=.terraform-docs.yml
+
+  - repo: local
+    hooks:
+      - id: validate-kubernetes
+        name: helm lint + template + kubeconform (charts + plain manifests)
+        entry: scripts/validate-kubernetes.sh
+        language: script
+        pass_filenames: false
+        files: '^kubernetes/'
+
+      - id: lint-iam-actions
+        name: IAM policy actions one-per-line, alphabetically sorted
+        description: >-
+          Not a tflint/checkov rule -- this is a style preference (readable
+          diffs on IAM policy changes), not a correctness or security
+          check, so it's a standalone script instead.
+        entry: scripts/lint-iam-actions.py
+        language: script
+        pass_filenames: false
+        files: '^terraform/.*\.tf$'

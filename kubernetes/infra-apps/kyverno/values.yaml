@@ -1,0 +1,10 @@
+kyverno:
+  replicaCount: 3
+  admissionController:
+    replicas: 3
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        memory: 512Mi

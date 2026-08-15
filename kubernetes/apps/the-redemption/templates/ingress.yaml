@@ -1,0 +1,29 @@
+# ALB target-type ip (routes directly to pod IPs, not NodePort), WAFv2
+# associated via annotation -- this is the actual association point for the
+# WebACL Terraform creates (the ALB itself is created by the AWS Load
+# Balancer Controller at runtime from this Ingress, not by Terraform).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: the-redemption
+  namespace: the-redemption
+  labels:
+    {{- include "the-redemption.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /healthz
+    alb.ingress.kubernetes.io/wafv2-acl-arn: {{ .Values.ingress.wafAclArn | quote }}
+spec:
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: the-redemption
+                port:
+                  number: 80
