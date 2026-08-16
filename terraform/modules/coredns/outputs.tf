@@ -1,3 +1,4 @@
 output "addon_arn" {
-  value = aws_eks_addon.coredns.arn
+  description = "ARN of the CoreDNS EKS addon."
+  value       = aws_eks_addon.coredns.arn
 }

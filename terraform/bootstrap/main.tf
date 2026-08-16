@@ -12,9 +12,8 @@
 #
 # Every other root module in this repo points its backend.tf at the bucket
 # created here. Locking is S3-native (`use_lockfile = true`, Terraform >=
-# 1.10) -- no separate DynamoDB lock table; AWS's S3 backend absorbed that
-# functionality via conditional writes, so a table that used to be
-# necessary infrastructure is now something to actively avoid provisioning.
+# 1.10)
+#
 ##############################################################################
 
 terraform {
@@ -46,8 +45,8 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 
 locals {
-  # Globally-unique bucket name: project + purpose + account id.
-  state_bucket_name = "${var.project}-tfstate-${data.aws_caller_identity.current.account_id}"
+  # Globally-unique bucket name: project + purpose.
+  state_bucket_name = "${var.project}-tfstate"
 }
 
 resource "aws_s3_bucket" "state" {

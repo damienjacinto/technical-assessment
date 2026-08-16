@@ -14,11 +14,6 @@
 # for why the two-stage split exists in the first place.
 ##############################################################################
 
-# most_recent = true, same as vpc-cni/kube-proxy/eks-pod-identity-agent in
-# modules/eks's own addons block -- resolved explicitly rather than
-# omitting addon_version, which would leave AWS's EKS API to silently pick
-# its own default version at creation time (not something this repo would
-# actually be choosing, and not visible in this HCL or state).
 data "aws_eks_addon_version" "coredns" {
   addon_name         = "coredns"
   kubernetes_version = var.cluster_version

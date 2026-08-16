@@ -7,9 +7,38 @@
 # on the nodes it provisions, or an empty cluster could never scale up.
 ##############################################################################
 
+# Auto-detected fallback for public_endpoint_allowed_cidrs, queried only
+# when actually needed (public endpoint on, no explicit CIDRs given) to
+# avoid an unnecessary external call otherwise -- e.g. a fully-private
+# cluster's plan/apply never hits the network for this. Uses AWS's own
+# IP-echo endpoint rather than a third-party one, since this stack already
+# trusts AWS.
+#
+# Trade-off accepted knowingly: this makes endpoint_public_access_cidrs
+# non-deterministic across operators/CI runners -- every apply from a
+# different network re-triggers an EKS VPC config update to swap the CIDR
+# to whichever machine is applying right now. Set
+# public_endpoint_allowed_cidrs explicitly once real office/VPN/CI runner
+# ranges exist (see modules/eks/NOTES.md for the target design) to get a
+# stable value instead.
+data "http" "my_ip" {
+  count = var.public_endpoint_enabled && length(var.public_endpoint_allowed_cidrs) == 0 ? 1 : 0
+
+  url = "https://checkip.amazonaws.com"
+  request_headers = {
+    Accept = "text/plain"
+  }
+}
+
+locals {
+  public_endpoint_allowed_cidrs = length(var.public_endpoint_allowed_cidrs) > 0 ? var.public_endpoint_allowed_cidrs : (
+    var.public_endpoint_enabled ? ["${trimspace(data.http.my_ip[0].response_body)}/32"] : []
+  )
+}
+
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 21.0" # requires AWS provider >= 6.0 -- see providers.tf
+  version = "~> 21.0"
 
   name               = var.cluster_name
   kubernetes_version = var.cluster_version
@@ -17,21 +46,11 @@ module "eks" {
   vpc_id     = var.vpc_id
   subnet_ids = var.private_subnet_ids
 
-  # Private endpoint always on; public endpoint restricted to explicit
-  # CIDRs (least privilege) rather than 0.0.0.0/0.
   endpoint_private_access      = true
   endpoint_public_access       = var.public_endpoint_enabled
-  endpoint_public_access_cidrs = var.public_endpoint_allowed_cidrs
+  endpoint_public_access_cidrs = local.public_endpoint_allowed_cidrs
+  enabled_log_types            = var.cluster_enabled_log_types
 
-  enabled_log_types = var.cluster_enabled_log_types
-
-  # Envelope encryption for Kubernetes Secrets. Owned here rather than by
-  # security-baseline: security-baseline's app security group needs this
-  # module's cluster_security_group_id output, so having this module in
-  # turn depend on security-baseline for a KMS key would be circular. This
-  # key is scoped to exactly one concern (secrets envelope encryption) and
-  # the underlying module's own well-tested default handles rotation/policy,
-  # so self-managing it here is the pragmatic call.
   create_kms_key                = true
   kms_key_description           = "${var.name_prefix} EKS Kubernetes Secrets envelope encryption"
   kms_key_enable_default_policy = true
@@ -39,17 +58,9 @@ module "eks" {
     resources = ["secrets"]
   }
 
-  # No IRSA: every ServiceAccount in this stack authenticates via EKS Pod
-  # Identity instead (see modules/pod-identity), so the OIDC IdP IRSA
-  # depends on isn't needed -- one less standing trust relationship.
+  # No IRSA: every ServiceAccount in this stack authenticates via EKS Pod Identity instead
   enable_irsa = false
 
-  # Required for Security Groups for Pods (SecurityGroupPolicy) on the
-  # kube-system Fargate profile -- v21 of this module stopped attaching it
-  # by default (previously implicit). Without it, the VPC Resource
-  # Controller can't manage the branch ENIs a SecurityGroupPolicy needs, and
-  # every Fargate pod silently falls back to the broad, shared cluster
-  # security group regardless of what SecurityGroupPolicy exists.
   iam_role_additional_policies = {
     AmazonEKSVPCResourceController = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
   }
@@ -61,13 +72,9 @@ module "eks" {
   addons = {
     vpc-cni = {
       before_compute = true
-      # v21 defaults most_recent to true, which is what we want, but stated
-      # explicitly rather than relying on a default that could change again.
-      most_recent = true
+      most_recent    = true
       configuration_values = jsonencode({
         env = {
-          # Multiplies pod density per ENI -- the standard fix for VPC CNI
-          # IP exhaustion under a 10x flash-sale scale-out.
           ENABLE_PREFIX_DELEGATION = "true"
         }
       })
@@ -78,12 +85,6 @@ module "eks" {
     eks-pod-identity-agent = {
       most_recent = true
     }
-    # coredns is intentionally NOT declared here. It must not be created
-    # until the kube-system Fargate profile exists (module.fargate_profile),
-    # otherwise it has nowhere to schedule at cluster-bring-up time. That
-    # ordering dependency is expressed at the composition level in
-    # envs/prod/foundation/main.tf via an explicit depends_on, not baked
-    # into this reusable module.
   }
 
   tags = var.tags

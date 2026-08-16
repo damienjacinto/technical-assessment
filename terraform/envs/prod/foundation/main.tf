@@ -6,8 +6,6 @@
 ##############################################################################
 
 locals {
-  # Single source of truth for naming/tags -- every module below receives
-  # these as inputs rather than inventing its own naming logic.
   name_prefix  = "${var.project}-${var.environment}"
   cluster_name = "${local.name_prefix}-eks"
 
@@ -62,9 +60,6 @@ module "fargate_profile" {
   tags               = merge(local.tags, { Component = "compute-fargate" })
 }
 
-# CoreDNS must not be created until the kube-system Fargate profile exists,
-# or it has nowhere to schedule at cluster bring-up -- see eks module's
-# main.tf comment. That ordering is expressed here via depends_on.
 module "coredns" {
   source = "../../../modules/coredns"
 

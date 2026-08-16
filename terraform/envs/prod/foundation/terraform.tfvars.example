@@ -14,8 +14,13 @@ vpc_cidr = "10.0.0.0/16"
 cluster_version = "1.35"
 
 # Least privilege: your office/VPN/CI runner CIDR ranges. Never 0.0.0.0/0
-# for a revenue-critical cluster's public API endpoint.
+# for a revenue-critical cluster's public API endpoint. Leave empty (or
+# omit) and module.eks auto-detects whoever is running `terraform apply`
+# and restricts to that machine's IP instead -- see
+# terraform/modules/eks/main.tf and NOTES.md. Neither is the target
+# design: access should ultimately go through an SSM bastion or private
+# CI runner inside the VPC, not a public CIDR allowlist.
 public_endpoint_allowed_cidrs = ["203.0.113.0/24"]
 
 owner      = "sre"
-repository = "https://github.com/CHANGEME/technical-assessment"
+repository = "https://github.com/damienjacinto/technical-assessment"

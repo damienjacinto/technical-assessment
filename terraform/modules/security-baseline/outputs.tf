@@ -1,5 +1,6 @@
 output "general_kms_key_arn" {
-  value = aws_kms_key.general.arn
+  description = "ARN of the general-purpose KMS key (Secrets Manager, EBS, WAF log group encryption)."
+  value       = aws_kms_key.general.arn
 }
 
 output "waf_web_acl_arn" {
@@ -8,5 +9,6 @@ output "waf_web_acl_arn" {
 }
 
 output "app_security_group_id" {
-  value = aws_security_group.app.id
+  description = "Security group ID for the-redemption's app pods (Security Groups for Pods)."
+  value       = aws_security_group.app.id
 }

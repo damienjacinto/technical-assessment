@@ -1,18 +1,22 @@
 variable "name_prefix" {
-  type = string
+  description = "Prefix used to name resources created by this module."
+  type        = string
 }
 
 variable "vpc_id" {
-  type = string
+  description = "ID of the VPC the app security group is created in."
+  type        = string
 }
 
 variable "vpc_cidr" {
-  type = string
+  description = "VPC CIDR block -- the app security group's ingress/egress rules are scoped to this range."
+  type        = string
 }
 
 variable "app_port" {
-  type    = number
-  default = 8080
+  description = "Port the-redemption's app pods listen on."
+  type        = number
+  default     = 8080
 }
 
 variable "rate_limit_per_5min" {
@@ -22,5 +26,6 @@ variable "rate_limit_per_5min" {
 }
 
 variable "tags" {
-  type = map(string)
+  description = "Tags applied to all resources created by this module."
+  type        = map(string)
 }

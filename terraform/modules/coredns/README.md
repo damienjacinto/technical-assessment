@@ -24,13 +24,13 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | n/a | `string` | n/a | yes |
+| <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | EKS cluster the CoreDNS addon is installed on. | `string` | n/a | yes |
 | <a name="input_cluster_version"></a> [cluster\_version](#input\_cluster\_version) | EKS Kubernetes version -- selects which CoreDNS addon versions are compatible. | `string` | n/a | yes |
-| <a name="input_tags"></a> [tags](#input\_tags) | n/a | `map(string)` | n/a | yes |
+| <a name="input_tags"></a> [tags](#input\_tags) | Tags applied to the CoreDNS addon. | `map(string)` | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_addon_arn"></a> [addon\_arn](#output\_addon\_arn) | n/a |
+| <a name="output_addon_arn"></a> [addon\_arn](#output\_addon\_arn) | ARN of the CoreDNS EKS addon. |
 <!-- END_TF_DOCS -->

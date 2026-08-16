@@ -107,13 +107,6 @@ module "alb_controller" {
   tags          = merge(local.foundation.tags, { Component = "networking-ingress" })
 }
 
-# External Secrets Operator's controller role. Scoped to only the
-# secretsmanager paths this project would ever use -- least privilege, not
-# a blanket secretsmanager:* grant. Pod Identity pairs this role with the
-# ServiceAccount entirely on the AWS side (the aws_eks_pod_identity_association
-# below) -- unlike IRSA, kubernetes/infra-apps/external-secrets doesn't need
-# this role's ARN threaded into it at all, so there's no
-# static-YAML-with-ACCOUNT_ID-placeholder seam to keep in sync here.
 module "external_secrets_pod_identity" {
   source = "../../../modules/pod-identity"
 

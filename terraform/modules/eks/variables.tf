@@ -1,5 +1,6 @@
 variable "name_prefix" {
-  type = string
+  description = "Prefix used to name resources created by this module."
+  type        = string
 }
 
 variable "cluster_name" {
@@ -8,22 +9,14 @@ variable "cluster_name" {
 }
 
 variable "cluster_version" {
-  description = <<-EOT
-    Kubernetes version for the control plane. Versioning policy (see
-    docs/ARCHITECTURE.md): track "latest minus one" EKS-supported minor
-    version, not the newest release -- current is 1.36 (GA June 2026), so
-    the default here is 1.35, not 1.36. Only jump to the newest minor if a
-    specific feature it introduces is actually needed; otherwise staying
-    one behind means the version has had a few months of the rest of the
-    ecosystem (controllers, Helm charts, this team's own tooling) catching
-    up to it before this cluster runs it.
-  EOT
+  description = "Kubernetes version for the control plane. Versioning policy: latest-minus-one, not bleeding edge -- see docs/ARCHITECTURE.md."
   type        = string
   default     = "1.35"
 }
 
 variable "vpc_id" {
-  type = string
+  description = "ID of the VPC the EKS control plane ENIs are created in."
+  type        = string
 }
 
 variable "private_subnet_ids" {
@@ -38,8 +31,22 @@ variable "public_endpoint_enabled" {
 }
 
 variable "public_endpoint_allowed_cidrs" {
-  description = "CIDRs allowed to reach the public API endpoint -- least privilege, never 0.0.0.0/0 for a revenue-critical cluster."
+  description = "CIDRs allowed to reach the public API endpoint -- real, internet-routable ranges only (office/VPN/CI runner), never 0.0.0.0/0."
   type        = list(string)
+  default     = []
+
+  validation {
+    condition     = !contains(var.public_endpoint_allowed_cidrs, "0.0.0.0/0")
+    error_message = "public_endpoint_allowed_cidrs must never contain 0.0.0.0/0 for a revenue-critical cluster."
+  }
+
+  validation {
+    condition = alltrue([
+      for cidr in var.public_endpoint_allowed_cidrs :
+      !can(regex("^(10\\.|172\\.(1[6-9]|2[0-9]|3[0-1])\\.|192\\.168\\.)", cidr))
+    ])
+    error_message = "public_endpoint_allowed_cidrs must be real, internet-routable CIDRs -- EKS rejects RFC1918 private ranges (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) in this field."
+  }
 }
 
 variable "cluster_enabled_log_types" {
@@ -49,5 +56,6 @@ variable "cluster_enabled_log_types" {
 }
 
 variable "tags" {
-  type = map(string)
+  description = "Tags applied to all resources created by this module."
+  type        = map(string)
 }

@@ -1,6 +1,7 @@
 variable "argocd_chart_version" {
-  type    = string
-  default = "7.7.11"
+  description = "argo-cd Helm chart version to install."
+  type        = string
+  default     = "7.7.11"
 }
 
 variable "git_repo_url" {
@@ -9,12 +10,14 @@ variable "git_repo_url" {
 }
 
 variable "git_revision" {
-  type    = string
-  default = "main"
+  description = "Git revision (branch/tag) ArgoCD Applications track as source.targetRevision."
+  type        = string
+  default     = "main"
 }
 
 variable "environment" {
-  type = string
+  description = "Environment name, threaded into the-redemption's Application as a Helm value."
+  type        = string
 }
 
 variable "waf_web_acl_arn" {
@@ -23,6 +26,7 @@ variable "waf_web_acl_arn" {
 }
 
 variable "argo_app_labels" {
-  type    = map(string)
-  default = {}
+  description = "Labels applied to every ArgoCD Application this module creates."
+  type        = map(string)
+  default     = {}
 }

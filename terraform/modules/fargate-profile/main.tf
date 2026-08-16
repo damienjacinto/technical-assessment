@@ -42,7 +42,6 @@ resource "aws_eks_fargate_profile" "kube_system" {
   fargate_profile_name   = "${var.name_prefix}-kube-system"
   pod_execution_role_arn = aws_iam_role.fargate_pod_execution.arn
 
-  # Fargate profiles only support private subnets.
   subnet_ids = var.private_subnet_ids
 
   # CoreDNS.

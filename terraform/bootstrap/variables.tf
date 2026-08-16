@@ -13,5 +13,5 @@ variable "aws_region" {
 variable "repository" {
   description = "Source repository URL, for traceability on the Repository tag."
   type        = string
-  default     = "https://github.com/CHANGEME/technical-assessment"
+  default     = "https://github.com/damienjacinto/technical-assessment"
 }

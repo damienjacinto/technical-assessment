@@ -1,17 +1,21 @@
 variable "name_prefix" {
-  type = string
+  description = "Prefix used to name resources created by this module."
+  type        = string
 }
 
 variable "cluster_name" {
-  type = string
+  description = "EKS cluster Karpenter provisions EC2 capacity for."
+  type        = string
 }
 
 variable "cluster_endpoint" {
-  type = string
+  description = "EKS cluster API server endpoint, passed to the Karpenter Helm chart's settings.clusterEndpoint value."
+  type        = string
 }
 
 variable "vpc_id" {
-  type = string
+  description = "ID of the VPC Karpenter-managed EC2 nodes are launched in."
+  type        = string
 }
 
 variable "vpc_cidr" {
@@ -20,8 +24,9 @@ variable "vpc_cidr" {
 }
 
 variable "karpenter_chart_version" {
-  type    = string
-  default = "1.1.1"
+  description = "karpenter Helm chart version to install."
+  type        = string
+  default     = "1.1.1"
 }
 
 variable "bottlerocket_ami_version" {
@@ -37,5 +42,6 @@ variable "bottlerocket_ami_version" {
 }
 
 variable "tags" {
-  type = map(string)
+  description = "Tags applied to all resources created by this module."
+  type        = map(string)
 }

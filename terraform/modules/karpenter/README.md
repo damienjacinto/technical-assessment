@@ -49,19 +49,19 @@
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_bottlerocket_ami_version"></a> [bottlerocket\_ami\_version](#input\_bottlerocket\_ami\_version) | Bottlerocket alias version for the EC2NodeClass's amiSelectorTerms.<br/>Pinned per docs/ARCHITECTURE.md's "latest-minus-one, not bleeding edge"<br/>policy -- see https://github.com/bottlerocket-os/bottlerocket/releases.<br/>Bumping this is a deliberate PR, same as every other pinned version in<br/>this repo. | `string` | `"v1.61.0"` | no |
-| <a name="input_cluster_endpoint"></a> [cluster\_endpoint](#input\_cluster\_endpoint) | n/a | `string` | n/a | yes |
-| <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | n/a | `string` | n/a | yes |
-| <a name="input_karpenter_chart_version"></a> [karpenter\_chart\_version](#input\_karpenter\_chart\_version) | n/a | `string` | `"1.1.1"` | no |
-| <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | n/a | `string` | n/a | yes |
-| <a name="input_tags"></a> [tags](#input\_tags) | n/a | `map(string)` | n/a | yes |
+| <a name="input_cluster_endpoint"></a> [cluster\_endpoint](#input\_cluster\_endpoint) | EKS cluster API server endpoint, passed to the Karpenter Helm chart's settings.clusterEndpoint value. | `string` | n/a | yes |
+| <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | EKS cluster Karpenter provisions EC2 capacity for. | `string` | n/a | yes |
+| <a name="input_karpenter_chart_version"></a> [karpenter\_chart\_version](#input\_karpenter\_chart\_version) | karpenter Helm chart version to install. | `string` | `"1.1.1"` | no |
+| <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix used to name resources created by this module. | `string` | n/a | yes |
+| <a name="input_tags"></a> [tags](#input\_tags) | Tags applied to all resources created by this module. | `map(string)` | n/a | yes |
 | <a name="input_vpc_cidr"></a> [vpc\_cidr](#input\_vpc\_cidr) | For the controller's Security-Groups-for-Pods rules -- see aws\_security\_group.controller. | `string` | n/a | yes |
-| <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | n/a | `string` | n/a | yes |
+| <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | ID of the VPC Karpenter-managed EC2 nodes are launched in. | `string` | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_controller_role_arn"></a> [controller\_role\_arn](#output\_controller\_role\_arn) | n/a |
-| <a name="output_interruption_queue_name"></a> [interruption\_queue\_name](#output\_interruption\_queue\_name) | n/a |
-| <a name="output_node_instance_profile_name"></a> [node\_instance\_profile\_name](#output\_node\_instance\_profile\_name) | n/a |
+| <a name="output_controller_role_arn"></a> [controller\_role\_arn](#output\_controller\_role\_arn) | IAM role ARN of the Karpenter controller's Pod Identity. |
+| <a name="output_interruption_queue_name"></a> [interruption\_queue\_name](#output\_interruption\_queue\_name) | SQS queue Karpenter consumes Spot interruption/rebalance events from. |
+| <a name="output_node_instance_profile_name"></a> [node\_instance\_profile\_name](#output\_node\_instance\_profile\_name) | IAM instance profile name attached to EC2 nodes Karpenter launches. |
 <!-- END_TF_DOCS -->

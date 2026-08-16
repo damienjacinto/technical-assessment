@@ -1,7 +1,9 @@
 output "role_arn" {
-  value = aws_iam_role.this.arn
+  description = "ARN of the IAM role created for this ServiceAccount's Pod Identity association."
+  value       = aws_iam_role.this.arn
 }
 
 output "role_name" {
-  value = aws_iam_role.this.name
+  description = "Name of the IAM role created for this ServiceAccount's Pod Identity association."
+  value       = aws_iam_role.this.name
 }

@@ -1,5 +1,6 @@
 variable "cluster_name" {
-  type = string
+  description = "EKS cluster the CoreDNS addon is installed on."
+  type        = string
 }
 
 variable "cluster_version" {
@@ -8,5 +9,6 @@ variable "cluster_version" {
 }
 
 variable "tags" {
-  type = map(string)
+  description = "Tags applied to the CoreDNS addon."
+  type        = map(string)
 }

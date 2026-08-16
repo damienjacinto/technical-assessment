@@ -5,16 +5,64 @@
 # the app's baseline Security-Group-for-Pods.
 ##############################################################################
 
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
+
 resource "aws_kms_key" "general" {
   description             = "${var.name_prefix} general-purpose encryption (Secrets Manager, EBS)"
   deletion_window_in_days = 30
   enable_key_rotation     = true
+  policy                  = data.aws_iam_policy_document.general_kms.json
   tags                    = merge(var.tags, { Name = "${var.name_prefix}-general-kms" })
 }
 
 resource "aws_kms_alias" "general" {
   name          = "alias/${var.name_prefix}-general"
   target_key_id = aws_kms_key.general.key_id
+}
+
+# Default key policy (root-only) doesn't cover cross-service resource
+# access: CloudWatch Logs calls KMS as the logs service itself, not as the
+# caller's IAM identity, so it needs its own statement here -- IAM
+# permissions on the caller alone aren't enough. Scoped via encryption
+# context to this account/region's log groups rather than to the WAF log
+# group specifically, since this key is also used for Secrets Manager/EBS
+# and any future CWL log group encrypted with it should work without a
+# policy change.
+data "aws_iam_policy_document" "general_kms" {
+  statement {
+    sid    = "EnableIAMUserPermissions"
+    effect = "Allow"
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
+    }
+    actions   = ["kms:*"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "AllowCloudWatchLogs"
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["logs.${data.aws_region.current.region}.amazonaws.com"]
+    }
+    actions = [
+      "kms:Encrypt*",
+      "kms:Decrypt*",
+      "kms:ReEncrypt*",
+      "kms:GenerateDataKey*",
+      "kms:Describe*",
+    ]
+    resources = ["*"]
+
+    condition {
+      test     = "ArnLike"
+      variable = "kms:EncryptionContext:aws:logs:arn"
+      values   = ["arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:*"]
+    }
+  }
 }
 
 ##############################################################################

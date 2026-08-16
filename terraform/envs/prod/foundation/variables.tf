@@ -1,6 +1,7 @@
 variable "project" {
-  type    = string
-  default = "redemption"
+  description = "Project name, used as the first component of local.name_prefix."
+  type        = string
+  default     = "redemption"
 }
 
 variable "environment" {
@@ -10,8 +11,9 @@ variable "environment" {
 }
 
 variable "aws_region" {
-  type    = string
-  default = "us-east-1"
+  description = "AWS region this environment is deployed to."
+  type        = string
+  default     = "us-east-1"
 }
 
 variable "azs" {
@@ -21,8 +23,9 @@ variable "azs" {
 }
 
 variable "vpc_cidr" {
-  type    = string
-  default = "10.0.0.0/16"
+  description = "VPC CIDR block. Must be a /16 for the tier math in terraform/modules/vpc/main.tf to produce the intended subnet sizes."
+  type        = string
+  default     = "10.0.0.0/16"
 }
 
 variable "cluster_version" {
@@ -34,6 +37,7 @@ variable "cluster_version" {
 variable "public_endpoint_allowed_cidrs" {
   description = "CIDRs allowed to reach the EKS public API endpoint. Least privilege: your office/VPN/CI runner ranges, never 0.0.0.0/0."
   type        = list(string)
+  default     = []
 }
 
 variable "owner" {
@@ -43,6 +47,7 @@ variable "owner" {
 }
 
 variable "repository" {
-  type    = string
-  default = "https://github.com/CHANGEME/technical-assessment"
+  description = "Repository URL, stamped onto local.tags as the Repository tag value."
+  type        = string
+  default     = "https://github.com/damienjacinto/technical-assessment"
 }

@@ -1,5 +1,6 @@
 variable "name_prefix" {
-  type = string
+  description = "Prefix used to name resources created by this module."
+  type        = string
 }
 
 variable "role_suffix" {
@@ -8,20 +9,24 @@ variable "role_suffix" {
 }
 
 variable "cluster_name" {
-  type = string
+  description = "EKS cluster the Pod Identity association is created against."
+  type        = string
 }
 
 variable "namespace" {
-  type = string
+  description = "Kubernetes namespace of the ServiceAccount this role is associated with."
+  type        = string
 }
 
 variable "service_account_name" {
-  type = string
+  description = "Name of the ServiceAccount this role is associated with."
+  type        = string
 }
 
 variable "managed_policy_arns" {
-  type    = list(string)
-  default = []
+  description = "AWS managed policy ARNs to attach to this role."
+  type        = list(string)
+  default     = []
 }
 
 variable "inline_policy_json" {
@@ -31,5 +36,6 @@ variable "inline_policy_json" {
 }
 
 variable "tags" {
-  type = map(string)
+  description = "Tags applied to all resources created by this module."
+  type        = map(string)
 }
