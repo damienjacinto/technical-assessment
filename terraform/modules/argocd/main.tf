@@ -59,6 +59,9 @@ resource "helm_release" "argocd" {
       redis = {
         resources = local.argocd_resources.redis
       }
+      redisSecretInit = {
+        resources = local.argocd_resources.redis_secret_init
+      }
       notifications = {
         resources = local.argocd_resources.notifications
       }
@@ -111,6 +114,10 @@ locals {
       limits   = { memory = "256Mi" }
     }
     notifications = {
+      requests = { cpu = "50m", memory = "32Mi" }
+      limits   = { memory = "64Mi" }
+    }
+    redis_secret_init = {
       requests = { cpu = "50m", memory = "32Mi" }
       limits   = { memory = "64Mi" }
     }

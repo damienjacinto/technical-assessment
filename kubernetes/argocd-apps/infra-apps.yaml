@@ -43,6 +43,14 @@ spec:
       destination:
         server: https://kubernetes.default.svc
         namespace: "{{namespace}}"
+      ignoreDifferences:
+        - group: kyverno.io
+          kind: ClusterPolicy
+          jqPathExpressions:
+            - .spec.admission
+            - .spec.emitWarning
+            - .spec.rules[].skipBackgroundRequests
+            - .spec.rules[].validate.allowExistingViolations
       syncPolicy:
         automated:
           prune: true

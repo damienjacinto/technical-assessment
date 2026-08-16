@@ -5,6 +5,9 @@ apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
   name: require-probes
+  annotations:
+    # Job/CronJob excluded: run-to-completion containers, probes don't apply.
+    pod-policies.kyverno.io/autogen-controllers: DaemonSet,Deployment,StatefulSet
 spec:
   validationFailureAction: Enforce
   background: true
