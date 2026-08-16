@@ -59,8 +59,6 @@ was actually checked here.
    ```
    cd terraform/envs/prod/foundation
    cp terraform.tfvars.example terraform.tfvars   # fill in real values
-   # backend.tf and providers.tf reference the account ID from step 1 — replace
-   # the ACCOUNT_ID placeholders in both files first.
    terraform init && terraform apply
    ```
 3. **Platform** (Karpenter, AWS Load Balancer Controller, ArgoCD — configures the
@@ -68,7 +66,7 @@ was actually checked here.
    exactly why this is a separate stage/state):
    ```
    cd terraform/envs/prod/platform
-   cp terraform.tfvars.example terraform.tfvars   # set git_repo_url to this repo
+   cp terraform.tfvars.example terraform.tfvars
    terraform init && terraform apply
    ```
 4. From here, **ArgoCD reconciles everything else** — NodePools, KEDA, Argo Rollouts,

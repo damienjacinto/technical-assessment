@@ -21,15 +21,8 @@ resource "aws_kms_alias" "general" {
   target_key_id = aws_kms_key.general.key_id
 }
 
-# Default key policy (root-only) doesn't cover cross-service resource
-# access: CloudWatch Logs calls KMS as the logs service itself, not as the
-# caller's IAM identity, so it needs its own statement here -- IAM
-# permissions on the caller alone aren't enough. Scoped via encryption
-# context to this account/region's log groups rather than to the WAF log
-# group specifically, since this key is also used for Secrets Manager/EBS
-# and any future CWL log group encrypted with it should work without a
-# policy change.
 data "aws_iam_policy_document" "general_kms" {
+  #checkov:skip=CKV_AWS_109:Root full-access statement mirrors AWS's own implicit default KMS key policy, not a bespoke grant -- see comment above.
   statement {
     sid    = "EnableIAMUserPermissions"
     effect = "Allow"
@@ -49,11 +42,11 @@ data "aws_iam_policy_document" "general_kms" {
       identifiers = ["logs.${data.aws_region.current.region}.amazonaws.com"]
     }
     actions = [
-      "kms:Encrypt*",
       "kms:Decrypt*",
-      "kms:ReEncrypt*",
-      "kms:GenerateDataKey*",
       "kms:Describe*",
+      "kms:Encrypt*",
+      "kms:GenerateDataKey*",
+      "kms:ReEncrypt*",
     ]
     resources = ["*"]
 

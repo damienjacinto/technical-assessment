@@ -42,8 +42,6 @@ provider "aws" {
   }
 }
 
-data "aws_caller_identity" "current" {}
-
 locals {
   # Globally-unique bucket name: project + purpose.
   state_bucket_name = "${var.project}-tfstate"
