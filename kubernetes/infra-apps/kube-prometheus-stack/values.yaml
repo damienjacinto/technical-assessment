@@ -9,6 +9,8 @@ kube-prometheus-stack:
         memory: 128Mi
       limits:
         memory: 256Mi
+    containerSecurityContext:
+      runAsNonRoot: true
     nodeSelector: &tools-node-selector
       karpenter.sh/nodepool: tools
     tolerations: &tools-tolerations
@@ -43,8 +45,6 @@ kube-prometheus-stack:
           labelSelector:
             matchLabels:
               app.kubernetes.io/name: prometheus
-      # Scrapes the OTel Collector's Prometheus-exporter endpoint (metrics
-      # that originated as OTLP from the-redemption).
       additionalScrapeConfigs:
         - job_name: otel-collector
           kubernetes_sd_configs:
@@ -84,6 +84,17 @@ kube-prometheus-stack:
         memory: 128Mi
       limits:
         memory: 256Mi
+    containerSecurityContext:
+      runAsNonRoot: true
+    sidecar:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          memory: 128Mi
+      securityContext:
+        runAsNonRoot: true
     persistence:
       enabled: true
       size: 10Gi
@@ -105,3 +116,15 @@ kube-prometheus-stack:
         memory: 64Mi
       limits:
         memory: 128Mi
+    containerSecurityContext:
+      runAsNonRoot: true
+
+  prometheus-node-exporter:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 32Mi
+      limits:
+        memory: 64Mi
+    containerSecurityContext:
+      runAsNonRoot: true

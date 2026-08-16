@@ -54,9 +54,7 @@ resource "helm_release" "argocd" {
         readinessProbe = { enabled = true }
       }
       dex = {
-        resources      = local.argocd_resources.dex
-        livenessProbe  = { enabled = true }
-        readinessProbe = { enabled = true }
+        resources = local.argocd_resources.dex
       }
       redis = {
         resources      = local.argocd_resources.redis
