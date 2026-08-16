@@ -186,7 +186,7 @@ resource "kubectl_manifest" "nodepool_tools" {
             {
               key      = "node.kubernetes.io/instance-type"
               operator = "In"
-              values   = [
+              values = [
                 "m6i.large",
                 "m5.large",
                 "c6i.large"
