@@ -42,8 +42,6 @@ resource "helm_release" "argocd" {
         }
         resources = local.argocd_resources.server
       }
-      # Per-component, not shared: a single 256Mi limit reused everywhere
-      # OOMKilled the controller, whose in-memory app state dwarfs the rest.
       controller = {
         resources = local.argocd_resources.controller
       }
@@ -51,19 +49,30 @@ resource "helm_release" "argocd" {
         resources = local.argocd_resources.repo_server
       }
       applicationSet = {
-        resources = local.argocd_resources.application_set
+        resources      = local.argocd_resources.application_set
+        livenessProbe  = { enabled = true }
+        readinessProbe = { enabled = true }
       }
       dex = {
-        resources = local.argocd_resources.dex
+        resources      = local.argocd_resources.dex
+        livenessProbe  = { enabled = true }
+        readinessProbe = { enabled = true }
       }
       redis = {
-        resources = local.argocd_resources.redis
+        resources      = local.argocd_resources.redis
+        livenessProbe  = { enabled = true }
+        readinessProbe = { enabled = true }
+        containerSecurityContext = {
+          runAsNonRoot = true
+        }
       }
       redisSecretInit = {
         resources = local.argocd_resources.redis_secret_init
       }
       notifications = {
-        resources = local.argocd_resources.notifications
+        resources      = local.argocd_resources.notifications
+        livenessProbe  = { enabled = true }
+        readinessProbe = { enabled = true }
       }
       global = {
         nodeSelector = {
@@ -90,8 +99,6 @@ locals {
       requests = { cpu = "500m", memory = "512Mi" }
       limits   = { memory = "1Gi" }
     }
-    # Renders Helm/Kustomize per sync, incl. kube-prometheus-stack's ~300
-    # resources -- memory spikes during templating, not steady-state.
     repo_server = {
       requests = { cpu = "200m", memory = "256Mi" }
       limits   = { memory = "512Mi" }
@@ -104,7 +111,6 @@ locals {
       requests = { cpu = "100m", memory = "64Mi" }
       limits   = { memory = "128Mi" }
     }
-    # Unused (local admin login only) but still deployed by the chart.
     dex = {
       requests = { cpu = "50m", memory = "32Mi" }
       limits   = { memory = "64Mi" }
