@@ -28,6 +28,10 @@ module "eks" {
   name               = var.cluster_name
   kubernetes_version = var.cluster_version
 
+  upgrade_policy = {
+    support_type = "STANDARD"
+  }
+
   vpc_id     = var.vpc_id
   subnet_ids = var.private_subnet_ids
 

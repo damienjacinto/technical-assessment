@@ -8,7 +8,7 @@ built for a 3-person SRE team.
 
 ```
 technical-assessment/
-├── docs/                       Architecture writeup, runbook, team plan
+├── docs/                       Architecture writeup, team plan
 ├── scripts/                    validate-kubernetes.sh, lint-iam-actions.py (pre-commit/CI)
 ├── terraform/
 │   ├── bootstrap/              State backend (S3, native locking) — apply once, by itself
@@ -83,6 +83,5 @@ future `terraform/envs/staging/` would reuse those same modules as-is, just with
    ```
 
 Full design writeup, with diagrams and the reasoning behind every decision, is in
-**[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)**. Incident procedures are in
-**[`docs/RUNBOOK.md`](docs/RUNBOOK.md)**. Team/task breakdown is in
+**[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)**. Team/task breakdown is in
 **[`docs/TEAM-PLAN.md`](docs/TEAM-PLAN.md)**.

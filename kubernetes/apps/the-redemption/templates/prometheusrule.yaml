@@ -44,4 +44,4 @@ spec:
             severity: critical
           annotations:
             summary: "Fewer than 2/3 of the-redemption replicas are up"
-            description: "Possible AZ-correlated failure -- check topology spread and whether an AZ is degraded (see docs/RUNBOOK.md)."
+            description: "Possible AZ-correlated failure -- check topology spread and whether an AZ is degraded."
