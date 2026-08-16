@@ -97,6 +97,9 @@ module "eks" {
     eks-pod-identity-agent = {
       most_recent = true
     }
+    metrics-server = {
+      most_recent = true
+    }
   }
 
   tags = var.tags

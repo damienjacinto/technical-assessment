@@ -6,7 +6,6 @@ argo-rollouts:
         cpu: 100m
         memory: 128Mi
       limits:
-        cpu: 500m
         memory: 512Mi
     nodeSelector:
       karpenter.sh/nodepool: tools
@@ -17,6 +16,12 @@ argo-rollouts:
         effect: NoSchedule
   dashboard:
     enabled: true
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        memory: 128Mi
     nodeSelector:
       karpenter.sh/nodepool: tools
     tolerations:
