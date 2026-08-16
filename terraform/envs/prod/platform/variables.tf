@@ -27,8 +27,8 @@ variable "alb_controller_chart_version" {
   default     = "3.5.0"
 }
 
-variable "argocd_chart_version" {
-  description = "argo-cd Helm chart version to install."
-  type        = string
-  default     = "10.3.3"
-}
+# variable "argocd_chart_version" {
+#   description = "argo-cd Helm chart version to install."
+#   type        = string
+#   default     = "10.3.3"
+# }
