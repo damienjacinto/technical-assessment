@@ -1,0 +1,25 @@
+# argo-cd's dex container runs argocd's own dex wrapper, not upstream dex --
+# nothing listens on the chart's assumed metrics port, so its livenessProbe/
+# readinessProbe values just crash-loop the container. Same situation as
+# the application-controller and grafana-sidecar exceptions.
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: argocd-dex-probe-exception
+  namespace: argocd
+spec:
+  exceptions:
+    - policyName: require-probes
+      ruleNames:
+        - require-readiness-and-liveness-probes
+        - autogen-require-readiness-and-liveness-probes
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - Deployment
+          namespaces:
+            - argocd
+          names:
+            - "argocd-dex-server*"
