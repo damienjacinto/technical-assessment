@@ -12,7 +12,7 @@ metadata:
     app.kubernetes.io/managed-by: argocd
     environment: prod
 spec:
-  replicas: 4
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: capacity-buffer
@@ -27,14 +27,21 @@ spec:
       terminationGracePeriodSeconds: 0
       nodeSelector:
         capacity-tier: spot-burst
+      # Must reserve a whole extra node, not eat slack on an app node.
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: the-redemption
+              topologyKey: kubernetes.io/hostname
+              namespaces:
+                - the-redemption
       containers:
         - name: pause
           image: registry.k8s.io/pause:3.9
           resources:
             requests:
-              # ~roughly one node's worth of headroom, split across
-              # replicas -- tune against the instance types in the
-              # spot-burst NodePool.
               cpu: 500m
               memory: 512Mi
             limits:
