@@ -10,6 +10,10 @@ external-secrets:
       memory: 128Mi
     limits:
       memory: 256Mi
+  livenessProbe:
+    enabled: true
+  readinessProbe:
+    enabled: true
   global: &tools-scheduling
     nodeSelector:
       karpenter.sh/nodepool: tools
@@ -20,6 +24,8 @@ external-secrets:
         effect: NoSchedule
   webhook:
     <<: *tools-scheduling
+    livenessProbe:
+      enabled: true
     resources:
       requests:
         cpu: 50m
@@ -28,6 +34,8 @@ external-secrets:
         memory: 128Mi
   certController:
     <<: *tools-scheduling
+    livenessProbe:
+      enabled: true
     resources:
       requests:
         cpu: 50m
