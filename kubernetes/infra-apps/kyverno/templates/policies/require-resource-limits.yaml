@@ -7,6 +7,10 @@ apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
   name: require-resource-requests-limits
+  annotations:
+    # Job/CronJob excluded: short-lived Helm hook containers (e.g. chart
+    # admission-webhook cert-gen jobs) aren't ours to size.
+    pod-policies.kyverno.io/autogen-controllers: DaemonSet,Deployment,StatefulSet
 spec:
   validationFailureAction: Enforce
   background: true
