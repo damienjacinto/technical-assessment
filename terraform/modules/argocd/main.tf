@@ -40,28 +40,27 @@ resource "helm_release" "argocd" {
             "alb.ingress.kubernetes.io/security-groups"  = var.alb_security_group_id
           }
         }
-        resources = local.component_resources
+        resources = local.argocd_resources.server
       }
-      # BestEffort (chart default) starved repo-server of CPU on a cold
-      # start, missing its 1s liveness-probe timeout and crash-looping it.
-      # Sized for every component, same reasoning could hit any of them.
+      # Per-component, not shared: a single 256Mi limit reused everywhere
+      # OOMKilled the controller, whose in-memory app state dwarfs the rest.
       controller = {
-        resources = local.component_resources
+        resources = local.argocd_resources.controller
       }
       repoServer = {
-        resources = local.component_resources
+        resources = local.argocd_resources.repo_server
       }
       applicationSet = {
-        resources = local.component_resources
+        resources = local.argocd_resources.application_set
       }
       dex = {
-        resources = local.component_resources
+        resources = local.argocd_resources.dex
       }
       redis = {
-        resources = local.component_resources
+        resources = local.argocd_resources.redis
       }
       notifications = {
-        resources = local.component_resources
+        resources = local.argocd_resources.notifications
       }
       global = {
         nodeSelector = {
@@ -81,13 +80,39 @@ resource "helm_release" "argocd" {
 }
 
 locals {
-  component_resources = {
-    requests = {
-      cpu    = "100m"
-      memory = "128Mi"
+  argocd_resources = {
+    # Holds the live+desired state of every synced resource in memory --
+    # by far the heaviest component.
+    controller = {
+      requests = { cpu = "500m", memory = "512Mi" }
+      limits   = { memory = "1Gi" }
     }
-    limits = {
-      memory = "256Mi"
+    # Renders Helm/Kustomize per sync, incl. kube-prometheus-stack's ~300
+    # resources -- memory spikes during templating, not steady-state.
+    repo_server = {
+      requests = { cpu = "200m", memory = "256Mi" }
+      limits   = { memory = "512Mi" }
+    }
+    server = {
+      requests = { cpu = "100m", memory = "128Mi" }
+      limits   = { memory = "256Mi" }
+    }
+    application_set = {
+      requests = { cpu = "100m", memory = "64Mi" }
+      limits   = { memory = "128Mi" }
+    }
+    # Unused (local admin login only) but still deployed by the chart.
+    dex = {
+      requests = { cpu = "50m", memory = "32Mi" }
+      limits   = { memory = "64Mi" }
+    }
+    redis = {
+      requests = { cpu = "100m", memory = "128Mi" }
+      limits   = { memory = "256Mi" }
+    }
+    notifications = {
+      requests = { cpu = "50m", memory = "32Mi" }
+      limits   = { memory = "64Mi" }
     }
   }
 }

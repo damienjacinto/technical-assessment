@@ -1,6 +1,8 @@
 # Enforced, not just advisory: a pod with no resource requests is exactly
 # the failure mode that lets one runaway workload starve the-redemption
 # during a flash sale, and it also breaks Karpenter's bin-packing math.
+# No CPU limit requirement, deliberately: CPU is compressible (throttling
+# wastes burst capacity for no benefit); memory limits still matter since memory isn't.
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
@@ -15,7 +17,7 @@ spec:
           - resources:
               kinds: [Pod]
       validate:
-        message: "Every container must set CPU/memory requests and limits."
+        message: "Every container must set CPU/memory requests and a memory limit."
         pattern:
           spec:
             containers:
@@ -24,5 +26,4 @@ spec:
                     cpu: "?*"
                     memory: "?*"
                   limits:
-                    cpu: "?*"
                     memory: "?*"

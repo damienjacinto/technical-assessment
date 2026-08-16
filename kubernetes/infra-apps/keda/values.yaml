@@ -3,10 +3,16 @@ keda:
     operator:
       requests:
         cpu: 100m
-        memory: 100Mi
+        memory: 128Mi
       limits:
-        cpu: 500m
-        memory: 500Mi
+        memory: 512Mi
+    # Unset falls back to the chart's own default, which sets limits.cpu -- explicit override needed.
+    metricServer:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        memory: 512Mi
   podDisruptionBudget:
     operator:
       minAvailable: 1

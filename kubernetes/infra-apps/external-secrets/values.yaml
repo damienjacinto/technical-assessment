@@ -18,5 +18,19 @@ external-secrets:
         operator: Equal
         value: tools
         effect: NoSchedule
-  webhook: *tools-scheduling
-  certController: *tools-scheduling
+  webhook:
+    <<: *tools-scheduling
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        memory: 128Mi
+  certController:
+    <<: *tools-scheduling
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        memory: 128Mi

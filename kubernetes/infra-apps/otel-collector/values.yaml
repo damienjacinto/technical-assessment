@@ -23,10 +23,10 @@ opentelemetry-collector:
 
   resources:
     requests:
-      cpu: 200m
-      memory: 256Mi
+      cpu: 250m
+      memory: 384Mi
     limits:
-      memory: 512Mi
+      memory: 768Mi
 
   config:
     receivers:
