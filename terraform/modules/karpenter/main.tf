@@ -1,18 +1,6 @@
-##############################################################################
-# Karpenter. Split by concern: iam.tf (controller IRSA role, node role),
-# sqs.tf (interruption handling), security_group.tf (Security Groups for
-# Pods), helm.tf (the controller release), nodepools.tf (EC2NodeClass +
-# NodePools).
-#
-# NodePool/EC2NodeClass are created in Terraform, not GitOps, to break a
-# bootstrap deadlock: ArgoCD's pods need a Karpenter-provisioned node
-# (they're not Fargate-eligible), but Karpenter can't provision anything
-# without a NodePool, and a NodePool synced by ArgoCD can't exist until
-# ArgoCD is already running. Creating it here breaks the cycle. Trade-off:
-# NodePool tuning needs a `terraform apply`, not a GitOps commit, and these
-# resources skip kubeconform's schema validation -- terraform validate
-# doesn't check K8s CRD schemas, so typos surface at apply time, not CI.
-##############################################################################
+# Karpenter, split by concern: iam.tf, sqs.tf, security_group.tf, this
+# file, nodepools.tf. NodePool/EC2NodeClass live in Terraform, not
+# GitOps, to break a deadlock: ArgoCD needs a Karpenter-provisioned node.
 
 resource "helm_release" "karpenter_crd" {
   name             = "karpenter-crd"

@@ -1,8 +1,5 @@
-##############################################################################
-# VPC Endpoints: keep image pulls, Pod Identity/STS credential exchange, and
-# log delivery off the NAT/internet path entirely (resilience +
-# defense-in-depth).
-##############################################################################
+# VPC Endpoints: keep image pulls, Pod Identity/STS, and log delivery
+# off the NAT/internet path entirely (resilience + defense-in-depth).
 
 resource "aws_security_group" "vpc_endpoints" {
   name        = "${var.name_prefix}-vpc-endpoints-sg"

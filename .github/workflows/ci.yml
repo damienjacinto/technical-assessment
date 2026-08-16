@@ -1,10 +1,5 @@
-##############################################################################
-# Runs the exact same checks as `pre-commit run --all-files` locally (see
-# .pre-commit-config.yaml) -- one config, one source of truth, so a clean
-# local run and a green CI run mean the same thing. If a check needs to
-# change, it changes in .pre-commit-config.yaml, not in two places that
-# can drift apart from each other.
-##############################################################################
+# Runs the exact same checks as `pre-commit run --all-files`
+# (.pre-commit-config.yaml) -- one source of truth, changes go there.
 
 name: CI
 
@@ -57,12 +52,9 @@ jobs:
 
       - name: Install terraform-docs
         env:
-          # Pinned (not `.../releases/latest`): the committed READMEs were
-          # generated with this version, and terraform-docs' markdown table
-          # formatting has changed between releases (e.g. separator row
-          # dash padding) -- an unpinned "latest" fetch drifts from what's
-          # committed independent of any real Terraform change, failing
-          # this hook on unrelated CI runs.
+          # Pinned, not `.../releases/latest`: committed READMEs were
+          # generated with this version, and formatting drifts between
+          # releases -- "latest" would fail this hook on unrelated runs.
           TERRAFORM_DOCS_VERSION: v0.19.0
         run: |
           url="https://github.com/terraform-docs/terraform-docs/releases/download/${TERRAFORM_DOCS_VERSION}/terraform-docs-${TERRAFORM_DOCS_VERSION}-linux-amd64.tar.gz"

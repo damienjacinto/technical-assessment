@@ -1,17 +1,11 @@
-# Gateway deployment (not a per-node DaemonSet agent): the-redemption's pods
-# push OTLP directly here via OTEL_EXPORTER_OTLP_ENDPOINT (set in the app's
-# Rollout template), the Collector fans out metrics -> Prometheus and
-# traces -> Tempo. Single instrumentation/collection layer for both, per
-# docs/ARCHITECTURE.md.
+# Gateway deployment (not per-node DaemonSet): the-redemption pushes OTLP
+# here directly, fanned out to Prometheus/Tempo (docs/ARCHITECTURE.md).
 opentelemetry-collector:
   mode: deployment
   replicaCount: 2
 
-  # Dedicated tooling NodePool (terraform/modules/karpenter) -- keeps this
-  # off the-redemption's on-demand-baseline/spot-burst capacity. Safe
-  # precisely because mode is "deployment" (see comment above) -- were
-  # this a DaemonSet, restricting it to one NodePool would break its
-  # per-node coverage.
+  # Dedicated tooling NodePool -- safe only because mode is "deployment";
+  # a DaemonSet restricted to one NodePool would break per-node coverage.
   nodeSelector:
     karpenter.sh/nodepool: tools
   tolerations:

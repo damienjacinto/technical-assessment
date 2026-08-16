@@ -1,7 +1,5 @@
-# IRSA, not modules/pod-identity: EKS Pod Identity doesn't work on Fargate
-# (its agent runs as a DaemonSet on EC2 nodes only), and the controller is
-# the one Fargate-hosted, AWS-API-consuming ServiceAccount here. See
-# modules/eks/main.tf's enable_irsa comment for how this was found.
+# IRSA, not modules/pod-identity: Pod Identity's agent only runs on EC2
+# nodes, but this controller is Fargate-hosted (modules/eks/main.tf).
 data "aws_iam_policy_document" "controller_irsa_trust" {
   statement {
     effect  = "Allow"
@@ -183,6 +181,7 @@ data "aws_iam_policy_document" "karpenter_controller" {
     actions = [
       "ec2:DescribeAvailabilityZones",
       "ec2:DescribeImages",
+      "ec2:DescribeInstanceStatus",
       "ec2:DescribeInstanceTypeOfferings",
       "ec2:DescribeInstanceTypes",
       "ec2:DescribeInstances",
@@ -304,6 +303,13 @@ data "aws_iam_policy_document" "karpenter_controller" {
     sid       = "AllowInstanceProfileReadActions"
     effect    = "Allow"
     actions   = ["iam:GetInstanceProfile"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid       = "AllowUnscopedInstanceProfileListAction"
+    effect    = "Allow"
+    actions   = ["iam:ListInstanceProfiles"]
     resources = ["*"]
   }
 }

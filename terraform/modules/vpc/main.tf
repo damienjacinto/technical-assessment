@@ -1,33 +1,17 @@
-##############################################################################
-# VPC: 3 AZ, 3-tier subnetting (public / private / isolated database) and
-# NAT egress. This file only -- flow-logs.tf, database.tf, and
-# vpc-endpoints.tf hold this module's other resources, split out by concern
-# rather than one long main.tf.
-#
-# Built on the community terraform-aws-modules/vpc/aws module rather than
-# hand-rolled subnet/route-table resources -- this is the standard, heavily
-# exercised way orgs provision VPCs, and re-deriving it here would be risk
-# without a corresponding benefit.
-##############################################################################
+# VPC: 3 AZ, 3-tier subnetting (public/private/isolated database), NAT
+# egress. Built on terraform-aws-modules/vpc/aws rather than hand-rolled
+# resources -- the standard, heavily exercised way to do this.
 
 locals {
-  # 3-tier CIDR carve-out from a single /16, chosen so each tier occupies a
-  # disjoint, non-overlapping range. Newbits and netnum offsets are named
-  # below rather than left as bare numbers in the cidrsubnet() calls, so
-  # the tier sizes and why they don't overlap are visible from the names
-  # themselves, not only from this comment:
-  #   public:   /24 per AZ  -> 10.x.0.0/24, 10.x.1.0/24, 10.x.2.0/24     (ALB + NAT ENIs only)
-  #   private:  /19 per AZ  -> 10.x.32.0/19, 10.x.64.0/19, 10.x.96.0/19  (nodes + pods)
-  #   database: /21 per AZ  -> 10.x.128.0/21, 10.x.136.0/21, 10.x.144.0/21 (isolated, no NAT/IGW route)
+  # Disjoint /16 carve-out: public /24 (ALB+NAT ENIs), private /19
+  # (nodes+pods), database /21 (isolated, no NAT/IGW route).
   public_subnet_newbits   = 8 # base /16 + 8 bits = /24
   private_subnet_newbits  = 3 # base /16 + 3 bits = /19
   database_subnet_newbits = 5 # base /16 + 5 bits = /21
 
-  # netnum offsets, chosen so no tier's netnum range overlaps another's
-  # given the newbits above (see the worked-out ranges in the comment
-  # block above).
-  private_subnet_netnum_offset  = 1  # skips netnum 0, which sits inside the public /24s
-  database_subnet_netnum_offset = 16 # skips the entire private /19 netnum range (1-3)
+  # Offsets chosen so no tier's netnum range overlaps another's.
+  private_subnet_netnum_offset  = 1  # skips netnum 0, inside the public /24s
+  database_subnet_netnum_offset = 16 # skips the private /19 range (1-3)
 
   public_subnets = [
     for i, az in var.azs : cidrsubnet(var.vpc_cidr, local.public_subnet_newbits, i)

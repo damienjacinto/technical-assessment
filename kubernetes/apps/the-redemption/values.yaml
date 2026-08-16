@@ -1,38 +1,25 @@
-# Defaults here are for local `helm lint`/`helm template` testing (and the
-# fallback when there's no live cluster to look up against -- see
-# ingress.wafAclArn below). In the real deployment: `environment` is
-# overridden via valuesObject in the static Application manifest
-# (kubernetes/argocd-apps/the-redemption.yaml), since it's git-known and
-# doesn't need a live Terraform value; `ingress.wafAclArn` is overridden by
-# templates/ingress.yaml's lookup() reading a ConfigMap Terraform writes
-# (terraform/envs/prod/platform/main.tf) -- see that ConfigMap's own
-# comment and kubernetes/argocd-apps/NOTES.md for why these two values,
-# which used to both go through the same valuesObject seam, now take
-# different paths. No serviceAccount.roleArn here: EKS Pod Identity pairs
-# this ServiceAccount with its IAM role entirely on the AWS side, so
-# there's nothing to inject into the chart for it.
+# Defaults here are for local helm lint/template (see ingress.albSecurityGroupId
+# below). `environment` comes from the static Application's valuesObject;
+# `albSecurityGroupId` comes from templates/ingress.yaml's lookup() reading
+# a Terraform-written ConfigMap instead (see NOTES.md for why they differ).
 
 image:
-  # Placeholder standing in for the real application image -- business
-  # logic is explicitly out of scope for this build. Any simple HTTP server
-  # that exposes /healthz works here for testing the platform.
+  # Placeholder image -- business logic is out of scope; any HTTP server
+  # exposing /healthz works here.
   repository: hashicorp/http-echo
   tag: "1.0"
 
-# Steady-state floor. KEDA (kubernetes/infra-apps/keda) governs scaling
-# beyond this once installed -- this is what keeps on-demand-baseline nodes
-# present (Karpenter itself holds no floor of its own; see
-# docs/ARCHITECTURE.md's node-management section).
+# Steady-state floor; KEDA governs scaling beyond it (Karpenter holds no
+# floor of its own -- docs/ARCHITECTURE.md).
 replicaCount: 3
 
 environment: prod
 port: 8080
 
 ingress:
-  # Placeholder default; templates/ingress.yaml's lookup() overrides this
-  # with the real WAF ACL ARN whenever a live cluster is available to
-  # look up against.
-  wafAclArn: ""
+  # Placeholder; templates/ingress.yaml's lookup() overrides with the
+  # real ALB security group ID on a live cluster.
+  albSecurityGroupId: ""
   host: redemption.example.com
 
 otel:
@@ -47,10 +34,8 @@ resources:
 
 autoscaling:
   maxReplicaCount: 60
-  # KEDA cron pre-warm for *known* flash sales -- see docs/ARCHITECTURE.md.
-  # Fill in the real sale calendar; example shown is a placeholder recurring
-  # Friday window, kept in sync with the NodePool disruption-budget
-  # blackout windows in terraform/modules/karpenter/main.tf.
+  # KEDA cron pre-warm for *known* sales (docs/ARCHITECTURE.md); example
+  # is a placeholder, sync with karpenter/main.tf's blackout windows.
   flashSale:
     cronStart: "0 12 * * 5"
     cronEnd: "0 14 * * 5"
@@ -60,8 +45,7 @@ pdb:
   minAvailable: "66%"
 
 network:
-  # Used by the NetworkPolicy's ingress ipBlock -- must match
-  # terraform/envs/prod/foundation's vpc_cidr.
+  # Must match terraform/envs/prod/foundation's vpc_cidr.
   vpcCidr: "10.0.0.0/16"
 
 prometheus:

@@ -1,10 +1,6 @@
-##############################################################################
-# Security baseline: a general-purpose KMS key (this file; Secrets Manager,
-# EBS, WAF logs -- the EKS Secrets envelope-encryption key is self-managed
-# by the eks module instead, see that module's main.tf for why), the edge
-# WAFv2 WebACL (waf.tf), and the app's baseline Security-Group-for-Pods
-# (security_group.tf).
-##############################################################################
+# Security baseline: general-purpose KMS key (this file), the app's
+# Security-Group-for-Pods (security_group.tf), and the ALB IP allowlist
+# (alb-allowlist.tf, alb-ip-restrict-sg.tf) -- no WAF in this module.
 
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}

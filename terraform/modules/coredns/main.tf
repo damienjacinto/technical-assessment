@@ -1,19 +1,6 @@
-##############################################################################
-# CoreDNS: the cluster's DNS addon, plus its Security-Groups-for-Pods policy.
-#
-# The addon is not declared inside modules/eks's own `addons` block -- it
-# must not be created until the kube-system Fargate profile exists
-# (foundation's module.fargate_profile), or it has nowhere to schedule at
-# cluster bring-up.
-#
-# Instantiated from terraform/envs/prod/platform, not foundation, because
-# the SecurityGroupPolicy below is a Kubernetes API object foundation has
-# no provider for -- see platform's own providers.tf comment for why the
-# two-stage split exists at all. Bundling the addon itself in here too
-# (rather than splitting it back out to foundation) keeps CoreDNS's AWS
-# resource and its Kubernetes resource in one module instead of two root
-# modules coordinating around a shared naming convention.
-##############################################################################
+# CoreDNS addon + its Security-Groups-for-Pods policy. Not in modules/eks's
+# `addons` block -- can't create before the Fargate profile exists.
+# Instantiated from platform: needs a Kubernetes provider foundation lacks.
 
 data "aws_eks_addon_version" "coredns" {
   addon_name         = "coredns"

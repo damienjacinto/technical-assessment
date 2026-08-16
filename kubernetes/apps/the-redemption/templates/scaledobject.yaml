@@ -1,10 +1,6 @@
-# Two triggers, KEDA takes the max across them. Primary: request-rate via
-# Prometheus (not CPU/memory, which lags a step-change). Secondary: cron,
-# pre-warming minReplicas ahead of a *known* flash sale so pods (and
-# therefore Karpenter nodes, via image pull + readiness warmup) exist
-# before the instant 10x step-change hits, not after. See
-# docs/ARCHITECTURE.md for the "no manual intervention" distinction this
-# still preserves.
+# KEDA takes the max of two triggers: Prometheus request-rate (CPU/memory
+# lags a step-change), and cron pre-warming ahead of a *known* flash sale
+# so pods/nodes exist before the 10x step hits (docs/ARCHITECTURE.md).
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:

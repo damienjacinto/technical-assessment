@@ -1,7 +1,5 @@
-# `release: kube-prometheus-stack` label is a real gotcha, not decoration:
-# the kube-prometheus-stack chart's Prometheus only picks up PrometheusRules
-# matching its ruleSelector, which defaults to selecting on the release
-# name label -- omit this and these alerts silently never fire.
+# `release: kube-prometheus-stack` label isn't decoration: Prometheus's
+# default ruleSelector requires it, or these alerts silently never fire.
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:

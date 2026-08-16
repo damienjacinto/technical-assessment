@@ -38,13 +38,10 @@ spec:
         {{- include "the-redemption.labels" . | nindent 8 }}
     spec:
       serviceAccountName: the-redemption
-      # Zone-level: hard requirement -- this is the actual resilience
-      # boundary the assessment names (AZ outage). minDomains: 3 matters at
-      # low replica counts (e.g. steady-state before a sale): without it, 2
-      # replicas could trivially "satisfy" even skew touching only 2 of 3
-      # zones. Node-level: soft, so it doesn't fight Karpenter's
-      # bin-packing/consolidation for a blast-radius boundary the
-      # assessment doesn't name.
+      # Zone-level: hard requirement, the real resilience boundary (AZ
+      # outage). minDomains: 3 stops 2 replicas trivially "satisfying" skew
+      # across only 2 zones. Node-level: soft, doesn't fight Karpenter's
+      # bin-packing.
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: topology.kubernetes.io/zone
@@ -93,10 +90,8 @@ spec:
             capabilities:
               drop: ["ALL"]
 ---
-# Queried by the canary's analysis step above. The "args.service-name"
-# placeholder in the PromQL below is Argo Rollouts' OWN templating syntax,
-# resolved at AnalysisRun time -- escaped in the query strings so Helm
-# renders it literally instead of trying to evaluate it as a Helm value path.
+# "args.service-name" below is Argo Rollouts' own templating syntax
+# (resolved at AnalysisRun time), escaped so Helm renders it literally.
 apiVersion: argoproj.io/v1alpha1
 kind: AnalysisTemplate
 metadata:

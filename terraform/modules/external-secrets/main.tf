@@ -1,10 +1,6 @@
-##############################################################################
 # external-secrets: Pod Identity role + least-privilege Secrets Manager
-# policy. The controller itself is not deployed here -- it's an
-# ArgoCD-managed infra-app (see terraform/modules/argocd/main.tf's
-# local.infra_apps), so this module is only the AWS-side wiring a
-# Terraform-agnostic Helm release still needs.
-##############################################################################
+# policy. The controller is an ArgoCD-managed infra-app, not deployed
+# here -- this is just the AWS-side wiring it needs.
 
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}

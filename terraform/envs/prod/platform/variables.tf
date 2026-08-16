@@ -1,13 +1,14 @@
-# variable "git_repo_url" {
-#   description = "This repo's git URL -- ArgoCD Applications point their source.repoURL here."
-#   type        = string
-# }
+variable "git_repo_url" {
+  description = "This repo's git URL -- ArgoCD Applications point their source.repoURL here."
+  type        = string
+  default     = "https://github.com/damienjacinto/technical-assessment.git"
+}
 
-# variable "git_revision" {
-#   description = "Git revision (branch/tag) ArgoCD Applications track as source.targetRevision."
-#   type        = string
-#   default     = "main"
-# }
+variable "git_revision" {
+  description = "Git revision (branch/tag) ArgoCD Applications track as source.targetRevision."
+  type        = string
+  default     = "main"
+}
 
 variable "karpenter_chart_version" {
   description = "karpenter Helm chart version to install -- see terraform/modules/karpenter/variables.tf for the Kubernetes-version compatibility constraint."
@@ -27,8 +28,8 @@ variable "alb_controller_chart_version" {
   default     = "3.5.0"
 }
 
-# variable "argocd_chart_version" {
-#   description = "argo-cd Helm chart version to install."
-#   type        = string
-#   default     = "10.3.3"
-# }
+variable "argocd_chart_version" {
+  description = "argo-cd Helm chart version to install."
+  type        = string
+  default     = "10.3.3"
+}

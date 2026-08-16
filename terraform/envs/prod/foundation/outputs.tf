@@ -104,9 +104,9 @@ output "karpenter_node_iam_role_name_prefix" {
   value       = local.name_prefix
 }
 
-output "waf_web_acl_arn" {
-  description = "ARN of the WAF Web ACL created by the security baseline module."
-  value       = module.security_baseline.waf_web_acl_arn
+output "alb_ip_restricted_sg_id" {
+  description = "Security group restricting both ALBs to the allowlisted IPs at the network layer, created by the security baseline module."
+  value       = module.security_baseline.alb_ip_restricted_sg_id
 }
 
 output "general_kms_key_arn" {

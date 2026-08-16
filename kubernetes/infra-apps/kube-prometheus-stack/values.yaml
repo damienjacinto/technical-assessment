@@ -1,9 +1,6 @@
-# Self-hosted Prometheus + Alertmanager + Grafana. Trade-off vs. AWS-managed
-# (AMP/AMG), stated explicitly in docs/ARCHITECTURE.md: owning HA/storage/
-# upgrades of this stack ourselves is a real Day-2-toil cost, accepted here
-# for full control over retention/PromQL/dashboards. Runs PVC-backed and
-# spread across AZs with its own PDB, so observability isn't itself a
-# single point of failure during an incident.
+# Self-hosted, not AWS-managed AMP/AMG (docs/ARCHITECTURE.md trade-off):
+# more Day-2 toil, in exchange for full control over retention/PromQL.
+# PVC-backed, spread across AZs with its own PDB.
 kube-prometheus-stack:
   prometheusOperator:
     nodeSelector: &tools-node-selector

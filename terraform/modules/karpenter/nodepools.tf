@@ -1,8 +1,6 @@
 # EC2NodeClass/NodePool live here, in Terraform, not GitOps -- see main.tf.
-# kubectl_manifest (alekc/kubectl), not the built-in kubernetes_manifest:
-# that provider fetches its target CRD's schema at *plan* time, which fails
-# on a from-scratch cluster since these CRDs (installed by helm.tf) don't
-# exist yet at the first apply's start.
+# kubectl_manifest, not kubernetes_manifest: that provider fetches the
+# CRD schema at *plan* time, which fails before helm.tf installs it.
 
 resource "kubectl_manifest" "ec2nodeclass" {
   yaml_body = yamlencode({
@@ -23,8 +21,12 @@ resource "kubectl_manifest" "ec2nodeclass" {
       subnetSelectorTerms = [
         { tags = { "karpenter.sh/discovery" = var.cluster_name } },
       ]
+      # Not kubernetes.io/cluster/<name>=owned: that tag also matches
+      # EKS's cluster primary SG (modules/eks/main.tf), which broke the
+      # ALB Controller's target-group-binding reconciler. This tag is
+      # unique to the dedicated node SG.
       securityGroupSelectorTerms = [
-        { tags = { "kubernetes.io/cluster/${var.cluster_name}" = "owned" } },
+        { tags = { "karpenter.sh/discovery" = var.cluster_name } },
       ]
       tags = merge(var.tags, { ManagedBy = "karpenter" })
     }

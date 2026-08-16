@@ -15,12 +15,9 @@ spec:
     targetRevision: main
     path: kubernetes/apps/the-redemption
     helm:
-      # environment is static/git-known (this repo only has one environment
-      # today), unlike the WAF ACL ARN -- that's not knowable until
-      # Terraform creates it, so it's deliberately NOT set here. See
-      # kubernetes/apps/the-redemption/templates/ingress.yaml and
-      # terraform/envs/prod/platform/main.tf's kubernetes_config_map for how
-      # that value reaches the chart instead.
+      # environment is static/git-known; the ALB security group ID isn't
+      # (Terraform-created), so it's deliberately not set here -- see
+      # templates/ingress.yaml's lookup() instead.
       valuesObject:
         environment: prod
   destination:

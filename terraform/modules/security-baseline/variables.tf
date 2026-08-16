@@ -19,10 +19,10 @@ variable "app_port" {
   default     = 8080
 }
 
-variable "rate_limit_per_5min" {
-  description = "WAF rate-based rule limit: requests per 5-minute window, per source IP."
-  type        = number
-  default     = 10000
+variable "alb_allowlist_cidrs" {
+  description = "CIDR allowlist for both ALBs' security group (aws_security_group.alb_ip_restricted) -- the only IPs allowed to reach the-redemption or ArgoCD at all. Empty list auto-detects the operator's current public IP via AWS's checkip endpoint at apply time -- see alb-allowlist.tf's data.http.my_ip comment."
+  type        = list(string)
+  default     = []
 }
 
 variable "tags" {

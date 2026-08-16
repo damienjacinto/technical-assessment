@@ -20,3 +20,8 @@ variable "argo_app_labels" {
   type        = map(string)
   default     = {}
 }
+
+variable "alb_security_group_id" {
+  description = "Security group restricting this Ingress's ALB to the allowlisted IPs, e.g. local.foundation.alb_ip_restricted_sg_id via foundation's remote state. This is this Ingress's actual access control -- no WAF in front of it."
+  type        = string
+}

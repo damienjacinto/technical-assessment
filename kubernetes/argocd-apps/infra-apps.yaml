@@ -1,13 +1,7 @@
-# One ApplicationSet instead of one Application file per infra-app: all 7
-# share an identical shape (source.path = kubernetes/infra-apps/<name>,
-# same repo/revision, same sync policy) and only differ in name +
-# destination namespace -- the list generator's `elements` is that
-# difference, expressed once as data instead of copy-pasted across 7
-# near-identical files. the-redemption is deliberately NOT here: it needs
-# an extra Helm value and a different source path prefix
-# (kubernetes/apps/..., not kubernetes/infra-apps/...), so it stays its
-# own explicit Application (the-redemption.yaml) rather than being forced
-# into this template for one exception.
+# One ApplicationSet for all 7 identically-shaped infra-apps -- only name
+# + namespace differ, expressed as list-generator data instead of 7
+# copy-pasted files. the-redemption stays its own Application (needs an
+# extra Helm value and a different source path prefix).
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:

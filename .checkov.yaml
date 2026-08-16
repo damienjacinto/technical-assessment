@@ -1,92 +1,45 @@
-# Checkov config. Every skip below is a documented design decision, not a
-# blanket suppression -- see the referenced files/sections in
-# docs/ARCHITECTURE.md for the reasoning. Re-run `checkov -d terraform`
-# without this file if you want to see the full raw finding list.
+# Checkov config. Every skip is a documented decision -- see
+# docs/ARCHITECTURE.md for details. Run `checkov -d terraform` without
+# this file for the full raw findings.
 #
-# `directory: [terraform]` alone is NOT enough scoping: the pre-commit
-# hook's own script (hooks/terraform_checkov.sh in antonbabenko/
-# pre-commit-terraform) always passes an explicit `-d`, and a CLI `-d`
-# takes precedence over this file's `directory:` key -- so without
-# `framework: [terraform]` too, checkov happily auto-detects and scans
-# Kubernetes/Helm-chart findings inside kubernetes/, including inside
-# vendored (gitignored, third-party, not something this project should be
-# grading) kubernetes/infra-apps/*/charts/ dependency output. Restricting
-# by framework is what actually holds regardless of which directory
-# checkov ends up pointed at.
+# framework: [terraform] is required alongside directory: -- a CLI -d
+# (used by the pre-commit hook) overrides directory:, so framework: is
+# what actually keeps checkov off vendored kubernetes/infra-apps/*/charts/.
 framework:
   - terraform
 directory:
   - terraform
 
 skip-check:
-  # Karpenter's and the AWS Load Balancer Controller's IAM policies need
-  # broad EC2/ELB describe + scoped-by-tag write actions with Resource: "*"
-  # -- that's how AWS's own published policies for these controllers are
-  # shaped (see terraform/modules/karpenter/main.tf and
-  # terraform/modules/alb-controller/NOTES.md, which already flags these
-  # policies for reconciliation against the canonical source before
-  # applying). Tightening resource scoping further than AWS's own
-  # documented policy would break the controllers, not improve security.
+  # Karpenter/ALB Controller IAM policies need Resource: "*" for scoped-by-tag
+  # actions -- matches AWS's own published policies for these controllers.
   - CKV_AWS_356 # IAM policy allows "*" as resource for restrictable actions
   - CKV_AWS_111 # IAM policy allows write access without constraints
   - CKV_AWS_108 # IAM policy allows data exfiltration
 
-  # Terraform Registry modules (terraform-aws-modules/{vpc,eks}/aws) are
-  # version-pinned via the registry's own semver system
-  # (`version = "~> 6.6"` / `"~> 21.0"`), which is the idiomatic way to
-  # consume a Registry module. A git-commit-hash pin is for git-source
-  # modules; applying that rule to Registry sources is a mismatch, not a
-  # real supply-chain gap here.
+  # Registry modules (terraform-aws-modules/*) are pinned via semver, the
+  # idiomatic method for Registry sources -- commit-hash pinning is for
+  # git-source modules.
   - CKV_TF_1 # Terraform module sources should use a commit hash
 
-  # Four security groups get flagged here, for two different reasons --
-  # neither is an orphaned resource:
-  #   - CoreDNS's (terraform/envs/prod/platform/main.tf) and Karpenter
-  #     controller's (terraform/modules/karpenter/main.tf) are genuinely
-  #     consumed via a Kubernetes SecurityGroupPolicy (Security Groups for
-  #     Pods) at the K8s layer, which static IaC scanning of the Terraform
-  #     tree alone can't see.
-  #   - the-redemption's app SG and the database SG are deliberate
-  #     placeholders: the app SG's own SecurityGroupPolicy doesn't exist yet
-  #     (a known, separately-tracked gap -- unlike the two above, this one
-  #     is NOT actually wired up despite the shape looking identical); the
-  #     database SG is the unattached network boundary for the out-of-scope
-  #     data layer (docs/ARCHITECTURE.md), ready for a future decision to
-  #     attach to.
+  # 4 SGs flagged, none orphaned: CoreDNS's and Karpenter controller's
+  # attach via a K8s SecurityGroupPolicy, invisible to static IaC scanning.
+  # the-redemption's app SG and the database SG are placeholders for
+  # not-yet-wired-up policies (docs/ARCHITECTURE.md).
   - CKV2_AWS_5 # Security group not attached to another resource
 
-  # AWS attaches an implicit default key policy (full access for the
-  # account's root/IAM principals) to any KMS key created without an
-  # explicit one -- secure by default in modern AWS. Writing bespoke key
-  # policies for every key in this project (general-purpose, flow-logs) is
-  # effort disproportionate to the actual risk reduction versus the
-  # implicit default, for a project this size.
+  # AWS's implicit default KMS key policy (full access for account
+  # root/IAM) is secure by default -- bespoke policies aren't worth it here.
   - CKV2_AWS_64 # KMS key policy should be defined
 
-  # Access logging, cross-region replication, and event notifications on
-  # the state bucket and flow-logs bucket: these two buckets ARE the
-  # audit/state artifacts (state bucket is written to only by
-  # `terraform apply`, flow-logs bucket only by VPC Flow Logs) -- adding
-  # access-logging destination buckets, cross-region replicas, and
-  # event-notification plumbing for them is real added infrastructure with
-  # low marginal value for what they're for. Cross-region replication in
-  # particular would also be inconsistent with this project's already
-  # explicit single-region design trade-off (docs/ARCHITECTURE.md's
-  # "Trade-offs and alternatives considered" section).
-  - CKV_AWS_18 # S3 bucket should have access logging enabled
+  # State/flow-logs buckets ARE the audit artifacts -- logging/replication/
+  # notifications on them is low-value, and replication conflicts with
+  # this project's single-region design (docs/ARCHITECTURE.md).
+  - CKV_AWS_18  # S3 bucket should have access logging enabled
   - CKV_AWS_144 # S3 bucket should have cross-region replication enabled
   - CKV2_AWS_62 # S3 bucket should have event notifications enabled
 
-  # The Fargate pod log group (terraform/modules/fargate-profile/main.tf)
-  # holds operational/debugging logs (CoreDNS queries, Karpenter's
-  # provisioning decisions), not a security audit trail like the WAF log
-  # group (which does meet the 1-year bar) -- 30 days is a deliberate
-  # right-size, not an oversight. Global, not an inline #checkov:skip on
-  # the resource itself, because this specific check doesn't honor inline
-  # skip comments in this checkov version (3.3.8) -- confirmed directly:
-  # a same-line trailing comment on the resource, and a leading comment
-  # line, were both silently ignored, while the identical pattern works
-  # fine for other (non-graph-based) checks elsewhere in this repo. Only
-  # one resource in the whole tree is currently short of a year, so this
-  # has no broader blast radius today -- revisit if that stops being true.
+  # Fargate pod log group is operational/debugging logs, not an audit
+  # trail -- 30 days is a deliberate right-size. Global because inline
+  # #checkov:skip is silently ignored for this check in checkov 3.3.8.
   - CKV_AWS_338 # CloudWatch log group should retain logs for at least 1 year

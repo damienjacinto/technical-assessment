@@ -2,24 +2,7 @@ locals {
   foundation = data.terraform_remote_state.foundation.outputs
 }
 
-# Fargate's built-in log router looks for this exact namespace/ConfigMap
-# name/shape -- without it, every Fargate pod's logs (CoreDNS queries,
-# Karpenter's provisioning decisions) are silently dropped, not errored;
-# `kubectl describe pod` on a Fargate pod shows a "LoggingDisabled ...
-# configmap \"aws-logging\" not found" Event, easy to miss since nothing
-# actually fails. The log group itself and the pod execution role's write
-# permissions are created in foundation (terraform/modules/fargate-profile)
-# -- this is only the Kubernetes-side config pointing the log router at
-# that already-created group, same foundation/platform AWS-vs-Kubernetes
-# split as everything else in this file.
-#
-# Pods already running when this first applies won't retroactively start
-# logging -- the log router reads this config at pod start, not live.
-# Self-resolving the same way the CoreDNS SecurityGroupPolicy bootstrap
-# caveat is (modules/coredns/main.tf): the next natural pod recreation
-# (addon version bump, Fargate rotation) picks it up, or force it sooner
-# with `kubectl delete pod -n kube-system -l k8s-app=kube-dns` /
-# `-l app.kubernetes.io/name=karpenter`.
+# Fargate's built-in log router
 resource "kubernetes_namespace" "aws_observability" {
   metadata {
     name = "aws-observability"
@@ -99,12 +82,7 @@ module "external_secrets" {
   depends_on   = [module.karpenter]
 }
 
-# the-redemption's own Pod Identity role. Deliberately zero permissions
-# attached -- a least-privilege placeholder, since the data layer (what this
-# role would actually need access to) is explicitly out of scope for this
-# build. The ServiceAccount/role association wiring exists so a future
-# data-layer decision only needs to attach a policy here, not touch app
-# manifests.
+# the-redemption's own Pod Identity role
 module "the_redemption_pod_identity" {
   source = "../../../modules/pod-identity"
 
@@ -117,44 +95,31 @@ module "the_redemption_pod_identity" {
   tags                 = merge(local.foundation.tags, { Component = "the-redemption-app" })
 }
 
-# the-redemption's WAF ACL ARN is only known after Terraform creates it
-# (security-baseline, in foundation). the-redemption's Application is now
-# static YAML (kubernetes/argocd-apps/the-redemption.yaml, synced via the
-# app-of-apps root Application below) -- static YAML can't carry a live
-# Terraform value the way the old per-app valuesObject injection could.
-# This ConfigMap is the new seam: written here from a live Terraform value,
-# read by the chart at render time via Helm's lookup() -- see
-# kubernetes/apps/the-redemption/templates/ingress.yaml. Lives in
-# kube-system (always exists) rather than the-redemption's own namespace,
-# so there's no ordering dependency on ArgoCD having created that
-# namespace yet.
-resource "kubernetes_config_map" "redemption_waf_config" {
+# the-redemption's ALB security group ID is only known after Terraform
+# creates it (security-baseline, in foundation)
+resource "kubernetes_config_map" "redemption_ingress_config" {
   metadata {
-    name      = "redemption-waf-config"
+    name      = "redemption-ingress-config"
     namespace = "kube-system"
   }
 
   data = {
-    wafAclArn = local.foundation.waf_web_acl_arn
+    albSecurityGroupId = local.foundation.alb_ip_restricted_sg_id
   }
 }
 
-# module "argocd" {
-#   source = "../../../modules/argocd"
+module "argocd" {
+  source = "../../../modules/argocd"
 
-#   argocd_chart_version = var.argocd_chart_version
-#   git_repo_url         = var.git_repo_url
-#   git_revision         = var.git_revision
+  argocd_chart_version = var.argocd_chart_version
+  git_repo_url         = var.git_repo_url
+  git_revision         = var.git_revision
 
-#   argo_app_labels = {
-#     "app.kubernetes.io/part-of"    = "redemption"
-#     "app.kubernetes.io/managed-by" = "argocd"
-#   }
+  alb_security_group_id = local.foundation.alb_ip_restricted_sg_id
 
-#   # The root Application's own children don't strictly need Karpenter/ALB
-#   # controller to exist first, but the workloads those children deploy
-#   # (pods needing nodes, an Ingress needing the controller) do -- ordering
-#   # this way avoids a burst of transient "unschedulable"/"no controller
-#   # found" noise right after the first apply.
-#   depends_on = [module.karpenter, module.alb_controller]
-# }
+  argo_app_labels = {
+    "app.kubernetes.io/part-of"    = "redemption"
+    "app.kubernetes.io/managed-by" = "argocd"
+  }
+  depends_on = [module.karpenter, module.alb_controller]
+}

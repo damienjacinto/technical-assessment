@@ -1,9 +1,6 @@
-##############################################################################
-# Stage 2 of 2. Configures the kubernetes/helm/kubectl providers against the
-# live cluster foundation created -- this is exactly why foundation and
-# platform are separate root modules/states: Terraform can't configure a
-# provider against a resource created earlier in the very same plan.
-##############################################################################
+# Stage 2 of 2: configures kubernetes/helm/kubectl against foundation's
+# cluster -- why they're separate states, since Terraform can't configure
+# a provider against a resource from the same plan.
 
 terraform {
   required_version = ">= 1.10"

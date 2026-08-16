@@ -1,20 +1,6 @@
-##############################################################################
-# Terraform state backend bootstrap.
-#
-# This has to be applied ONCE, by itself, with local state, before any
-# envs/<environment>/{foundation,platform} stack can use the S3 backend it
-# creates here. Chicken-and-egg: you cannot store the state for the bucket
-# that stores your state, inside that same bucket.
-#
-#   cd terraform/bootstrap
-#   terraform init
-#   terraform apply
-#
-# Every other root module in this repo points its backend.tf at the bucket
-# created here. Locking is S3-native (`use_lockfile = true`, Terraform >=
-# 1.10)
-#
-##############################################################################
+# State backend bootstrap. Apply ONCE, with local state, before any
+# envs/<environment> stack: cd terraform/bootstrap && terraform init && apply.
+# Every other root module points its backend.tf at the bucket created here.
 
 terraform {
   required_version = ">= 1.10"

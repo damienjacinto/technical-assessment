@@ -1,11 +1,6 @@
-# pre-commit run --all-files    to check everything once
-# pre-commit install             to run automatically on every commit
-#
-# Mirrors .github/workflows/ci.yml: terraform fmt/validate, Kyverno-
-# equivalent policy-as-code for the Terraform side (tflint + checkov), and
-# the same helm lint/template/kubeconform pass used to verify this repo.
-# Local findings here should never surprise anyone in CI -- if it fails
-# here, it fails there.
+# pre-commit run --all-files   to check everything once
+# pre-commit install            to run automatically on every commit
+# Mirrors .github/workflows/ci.yml -- if it fails here, it fails there.
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0

@@ -1,8 +1,5 @@
-##############################################################################
-# kube-system Fargate profile: CoreDNS + the Karpenter controller run here,
-# not on Karpenter-managed EC2 nodes.
-#
-##############################################################################
+# kube-system Fargate profile: CoreDNS + the Karpenter controller run
+# here, not on Karpenter-managed EC2 nodes.
 
 resource "aws_iam_role" "fargate_pod_execution" {
   name = "${var.name_prefix}-fargate-pod-execution-role"
@@ -33,9 +30,7 @@ resource "aws_iam_role_policy_attachment" "fargate_pod_execution" {
 
 resource "aws_cloudwatch_log_group" "fargate" {
   name = "/aws/eks/${var.cluster_name}/fargate"
-  # Operational/debugging logs (CoreDNS queries, Karpenter's provisioning
-  # decisions), not a security audit trail -- shorter retention than the
-  # WAF log group's 1 year is appropriate here.
+  # Operational/debugging logs (CoreDNS, Karpenter), not an audit trail.
   retention_in_days = 30
   kms_key_id        = var.kms_key_arn
   tags              = var.tags
@@ -65,12 +60,9 @@ resource "aws_eks_fargate_profile" "kube_system" {
 
   subnet_ids = var.private_subnet_ids
 
-  # Label-scoped on purpose, not `namespace = "kube-system"` alone: every
-  # other kube-system controller (ALB controller, ...) relies on these two
-  # selectors staying this precise to stay OFF Fargate implicitly, rather
-  # than each one needing its own anti-affinity to opt out. Broadening
-  # either selector (e.g. dropping the label match) would silently pull
-  # those controllers onto Fargate too.
+  # Label-scoped, not `namespace = "kube-system"` alone: other kube-system
+  # controllers rely on staying OFF Fargate implicitly. Broadening either
+  # selector would silently pull them onto Fargate too.
 
   # CoreDNS.
   selector {

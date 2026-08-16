@@ -1,26 +1,11 @@
-##############################################################################
-# EKS cluster: control plane only. No EC2 node groups are created here --
-# Karpenter (module.karpenter, in the platform stage) provisions all EC2
-# capacity for workloads, and kube-system (CoreDNS + the Karpenter
-# controller itself) runs on the Fargate profile from module.fargate_profile.
-# That split solves the bootstrap chicken-and-egg: Karpenter can't run only
-# on the nodes it provisions, or an empty cluster could never scale up.
-##############################################################################
+# EKS control plane only -- Karpenter provisions all EC2 capacity
+# (platform stage), kube-system runs on Fargate. Breaks the bootstrap
+# chicken-and-egg: Karpenter can't run only on nodes it provisions itself.
 
 # Auto-detected fallback for public_endpoint_allowed_cidrs, queried only
-# when actually needed (public endpoint on, no explicit CIDRs given) to
-# avoid an unnecessary external call otherwise -- e.g. a fully-private
-# cluster's plan/apply never hits the network for this. Uses AWS's own
-# IP-echo endpoint rather than a third-party one, since this stack already
-# trusts AWS.
-#
-# Trade-off accepted knowingly: this makes endpoint_public_access_cidrs
-# non-deterministic across operators/CI runners -- every apply from a
-# different network re-triggers an EKS VPC config update to swap the CIDR
-# to whichever machine is applying right now. Set
-# public_endpoint_allowed_cidrs explicitly once real office/VPN/CI runner
-# ranges exist (see modules/eks/NOTES.md for the target design) to get a
-# stable value instead.
+# when needed (public endpoint on, no explicit CIDRs). Trade-off: makes
+# the CIDR non-deterministic across operators -- set it explicitly once
+# real office/VPN/CI ranges exist (modules/eks/NOTES.md).
 data "http" "my_ip" {
   count = var.public_endpoint_enabled && length(var.public_endpoint_allowed_cidrs) == 0 ? 1 : 0
 
@@ -45,6 +30,15 @@ module "eks" {
 
   vpc_id     = var.vpc_id
   subnet_ids = var.private_subnet_ids
+
+  # This module's node SG and EKS's own cluster primary SG are both
+  # tagged kubernetes.io/cluster/<name>=owned by default (docs/faq.md
+  # "expected exactly one securityGroup tagged..."), which broke the ALB
+  # Controller's target-group-binding reconciler. This unique tag lets
+  # Karpenter's securityGroupSelectorTerms match only this SG.
+  node_security_group_tags = {
+    "karpenter.sh/discovery" = var.cluster_name
+  }
 
   endpoint_private_access      = true
   endpoint_public_access       = var.public_endpoint_enabled

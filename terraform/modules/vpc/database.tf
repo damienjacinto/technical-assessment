@@ -1,9 +1,6 @@
-##############################################################################
-# Database tier: subnet group + a security group that only allows ingress
-# from the private (app) tier. No database instance is provisioned here --
-# the data layer is out of scope for this build; this is the network
-# boundary a future data-layer decision attaches to.
-##############################################################################
+# Database tier: subnet group + SG allowing ingress only from the
+# private/app tier. No instance provisioned -- data layer is out of
+# scope; this is the network boundary a future decision attaches to.
 
 resource "aws_security_group" "database" {
   name        = "${var.name_prefix}-database-sg"

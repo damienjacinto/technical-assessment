@@ -1,9 +1,7 @@
-# Security Groups for Pods, scoping the controller down from the broad
-# shared cluster SG every unmatched Fargate pod otherwise falls back to.
-# Requires AmazonEKSVPCResourceController on the cluster role
-# (modules/eks/main.tf). Ports are Karpenter's v1 defaults (webhook 8443,
-# metrics 8080, health 8081) -- reconcile against chart values for
-# var.karpenter_chart_version before applying, these shift across releases.
+# Security Groups for Pods, scoping down from the shared cluster SG.
+# Requires AmazonEKSVPCResourceController (modules/eks/main.tf). Ports
+# are Karpenter v1 defaults -- reconcile against chart values before
+# bumping var.karpenter_chart_version.
 resource "aws_security_group" "controller" {
   name        = "${var.name_prefix}-karpenter-controller-sg"
   description = "Karpenter controller pod (Security Groups for Pods)"
@@ -11,11 +9,9 @@ resource "aws_security_group" "controller" {
   tags        = merge(var.tags, { Name = "${var.name_prefix}-karpenter-controller-sg" })
 }
 
-# Unrestricted, not scoped to var.vpc_cidr/443: narrow egress broke the
-# controller three separate times (EC2/SQS/Pricing APIs, the Pod Identity
-# Agent's link-local endpoint, ...) before this. A controller calling AWS
-# APIs it doesn't fully enumerate in advance isn't a good fit for
-# network-layer scoping -- the IAM policy in iam.tf is the real boundary.
+# Unrestricted, not scoped to vpc_cidr/443: narrow egress broke the
+# controller repeatedly (EC2/SQS/Pricing APIs, Pod Identity Agent) --
+# iam.tf's IAM policy is the real boundary here.
 resource "aws_vpc_security_group_egress_rule" "controller_all_out" {
   security_group_id = aws_security_group.controller.id
   description       = "Unrestricted -- see comment above"
@@ -50,10 +46,9 @@ resource "aws_vpc_security_group_ingress_rule" "controller_health_probe" {
   ip_protocol       = "tcp"
 }
 
-# var.cluster_security_group_id alongside the custom SG, not instead of it:
-# a SecurityGroupPolicy's groupIds *replaces* Fargate's default cluster SG
-# rather than adding to it. Without it, the pod hangs in an endless "Pod
-# provisioning timed out" loop (AWS-documented; hit this directly).
+# cluster_security_group_id alongside the custom SG, not instead: groupIds
+# *replaces* Fargate's default cluster SG. Without it, pods hang in an
+# endless "Pod provisioning timed out" loop (hit this directly).
 resource "kubectl_manifest" "controller_security_group_policy" {
   yaml_body = yamlencode({
     apiVersion = "vpcresources.k8s.aws/v1beta1"

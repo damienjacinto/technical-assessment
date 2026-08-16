@@ -1,9 +1,5 @@
-##############################################################################
-# Points at the bucket created once by terraform/bootstrap. Backend blocks
-# can't interpolate variables, so this is literal -- it follows the same
-# {project}-tfstate naming bootstrap/main.tf produces.
-#
-##############################################################################
+# Points at the bucket terraform/bootstrap creates. Backend blocks can't
+# interpolate variables, so this is literal, following its naming.
 
 terraform {
   backend "s3" {

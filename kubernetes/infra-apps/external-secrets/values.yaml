@@ -1,8 +1,5 @@
-# No eks.amazonaws.com/role-arn annotation, and no ACCOUNT_ID placeholder to
-# keep in sync: this ServiceAccount authenticates via EKS Pod Identity, whose
-# role<->ServiceAccount pairing (terraform/envs/prod/platform/main.tf's
-# aws_eks_pod_identity_association) lives entirely on the AWS side, not in
-# this chart.
+# No role-arn annotation: this ServiceAccount authenticates via EKS Pod
+# Identity, whose pairing lives entirely on the AWS side, not this chart.
 external-secrets:
   serviceAccount:
     create: true

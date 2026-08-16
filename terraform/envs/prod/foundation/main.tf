@@ -1,11 +1,7 @@
-##############################################################################
-# Stage 1 of 2: everything that must exist before the kubernetes/helm/kubectl
-# Terraform providers can be configured against a live cluster (envs/prod/platform
-# is stage 2). VPC, EKS control plane, the kube-system Fargate profile, and
-# security baseline. Every Pod Identity role (Karpenter, ALB controller,
-# external-secrets, the-redemption) lives in platform instead, alongside the
-# controllers/GitOps wiring that are its actual reason to exist.
-##############################################################################
+# Stage 1 of 2: everything needed before the kubernetes/helm/kubectl
+# providers can target a live cluster (platform is stage 2). VPC, EKS
+# control plane, Fargate profile, security baseline -- Pod Identity roles
+# live in platform instead, alongside what actually uses them.
 
 locals {
   name_prefix  = "${var.project}-${var.environment}"

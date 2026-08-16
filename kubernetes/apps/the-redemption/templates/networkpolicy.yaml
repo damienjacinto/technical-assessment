@@ -53,11 +53,9 @@ spec:
       ports:
         - protocol: TCP
           port: 4317
-    # AWS API calls via the VPC interface endpoints (Secrets Manager via
-    # External Secrets, etc.) -- and, once the data layer lands, the
-    # database tier. Not needed for this pod's own credentials: EKS Pod
-    # Identity vends those node-locally via the agent DaemonSet, which
-    # doesn't traverse this NetworkPolicy's egress path.
+    # AWS API calls via VPC interface endpoints, and the future database
+    # tier. Not this pod's own credentials -- Pod Identity vends those
+    # node-locally, bypassing this egress path.
     - to:
         - ipBlock:
             cidr: {{ .Values.network.vpcCidr }}

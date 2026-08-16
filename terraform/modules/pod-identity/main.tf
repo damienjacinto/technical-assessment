@@ -1,18 +1,6 @@
-##############################################################################
-# Reusable EKS Pod Identity module: one IAM role + one
-# aws_eks_pod_identity_association per ServiceAccount.
-#
-# Every controller/workload in this stack that needs AWS API access gets its
-# own instance of this module -- never node-wide IAM. That's the "least
-# privilege" half of the security design: a compromised pod only has the
-# permissions its own ServiceAccount was scoped to, not whatever the
-# underlying EC2 instance profile happens to carry.
-#
-# Requires the eks-pod-identity-agent addon on the cluster (see
-# terraform/modules/eks/main.tf) -- the agent DaemonSet is what actually
-# vends credentials to pods at runtime; this module only creates the AWS
-# side of the association.
-##############################################################################
+# Reusable EKS Pod Identity module: one IAM role + association per
+# ServiceAccount, never node-wide IAM. Requires the eks-pod-identity-agent
+# addon (terraform/modules/eks/main.tf) to vend credentials at runtime.
 
 data "aws_iam_policy_document" "trust" {
   statement {
