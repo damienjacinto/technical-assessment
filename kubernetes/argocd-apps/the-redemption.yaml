@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: the-redemption
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  labels:
+    app.kubernetes.io/part-of: redemption
+    app.kubernetes.io/managed-by: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/damienjacinto/technical-assessment.git
+    targetRevision: main
+    path: kubernetes/apps/the-redemption
+    helm:
+      # environment is static/git-known (this repo only has one environment
+      # today), unlike the WAF ACL ARN -- that's not knowable until
+      # Terraform creates it, so it's deliberately NOT set here. See
+      # kubernetes/apps/the-redemption/templates/ingress.yaml and
+      # terraform/envs/prod/platform/main.tf's kubernetes_config_map for how
+      # that value reaches the chart instead.
+      valuesObject:
+        environment: prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: the-redemption
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

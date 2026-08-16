@@ -68,6 +68,11 @@ output "cluster_endpoint" {
   value       = module.eks.cluster_endpoint
 }
 
+output "cluster_version" {
+  description = "Kubernetes version running on the EKS control plane -- platform's module.coredns needs this to pick compatible addon versions."
+  value       = module.eks.cluster_version
+}
+
 output "cluster_certificate_authority_data" {
   description = "Base64-encoded certificate authority data for the EKS cluster."
   value       = module.eks.cluster_certificate_authority_data
@@ -75,8 +80,23 @@ output "cluster_certificate_authority_data" {
 }
 
 output "cluster_security_group_id" {
-  description = "Security group ID attached to the EKS cluster control plane."
+  description = "The EKS-managed cluster security group -- see modules/eks/outputs.tf for why this specific one, not the similarly-named-but-different alternative the upstream module also exposes."
   value       = module.eks.cluster_security_group_id
+}
+
+output "oidc_provider_arn" {
+  description = "ARN of the cluster's OIDC identity provider -- platform's module.karpenter needs this for its controller's IRSA trust policy (Pod Identity doesn't work on Fargate)."
+  value       = module.eks.oidc_provider_arn
+}
+
+output "oidc_provider" {
+  description = "Cluster OIDC issuer without the https:// prefix -- platform's module.karpenter needs this for its controller's IRSA trust policy condition keys."
+  value       = module.eks.oidc_provider
+}
+
+output "fargate_log_group_name" {
+  description = "CloudWatch Logs group Fargate pod logs ship to -- platform's aws-logging ConfigMap points the Fargate log router at this."
+  value       = module.fargate_profile.log_group_name
 }
 
 output "karpenter_node_iam_role_name_prefix" {
@@ -97,9 +117,4 @@ output "general_kms_key_arn" {
 output "app_security_group_id" {
   description = "Security group ID for application workloads, created by the security baseline module."
   value       = module.security_baseline.app_security_group_id
-}
-
-output "the_redemption_pod_identity_role_arn" {
-  description = "Not consumed by the argocd module -- Pod Identity's role<->ServiceAccount pairing is done entirely on the AWS side via the aws_eks_pod_identity_association, unlike IRSA which needed the ARN threaded into the chart's ServiceAccount annotation. Exposed for a future data-layer decision to attach a policy against."
-  value       = module.pod_identity.role_arn
 }

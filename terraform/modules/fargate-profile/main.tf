@@ -2,12 +2,6 @@
 # kube-system Fargate profile: CoreDNS + the Karpenter controller run here,
 # not on Karpenter-managed EC2 nodes.
 #
-# Why: (1) bootstrap chicken-and-egg -- if Karpenter only ran on the nodes
-# it provisions, an empty cluster could never scale up from zero; Fargate is
-# a substrate that always exists independent of NodePool state. (2)
-# blast-radius isolation -- CoreDNS is cluster-critical (every Service
-# depends on DNS resolution) and shouldn't share EC2 capacity that gets
-# churned by Spot interruptions, consolidation, or an AZ failure.
 ##############################################################################
 
 resource "aws_iam_role" "fargate_pod_execution" {
@@ -37,12 +31,46 @@ resource "aws_iam_role_policy_attachment" "fargate_pod_execution" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSFargatePodExecutionRolePolicy"
 }
 
+resource "aws_cloudwatch_log_group" "fargate" {
+  name = "/aws/eks/${var.cluster_name}/fargate"
+  # Operational/debugging logs (CoreDNS queries, Karpenter's provisioning
+  # decisions), not a security audit trail -- shorter retention than the
+  # WAF log group's 1 year is appropriate here.
+  retention_in_days = 30
+  kms_key_id        = var.kms_key_arn
+  tags              = var.tags
+}
+
+resource "aws_iam_role_policy" "fargate_logging" {
+  name = "${var.name_prefix}-fargate-logging"
+  role = aws_iam_role.fargate_pod_execution.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "logs:CreateLogStream",
+        "logs:DescribeLogStreams",
+        "logs:PutLogEvents",
+      ]
+      Resource = "arn:aws:logs:${var.aws_region}:${var.account_id}:log-group:${aws_cloudwatch_log_group.fargate.name}:*"
+    }]
+  })
+}
+
 resource "aws_eks_fargate_profile" "kube_system" {
   cluster_name           = var.cluster_name
   fargate_profile_name   = "${var.name_prefix}-kube-system"
   pod_execution_role_arn = aws_iam_role.fargate_pod_execution.arn
 
   subnet_ids = var.private_subnet_ids
+
+  # Label-scoped on purpose, not `namespace = "kube-system"` alone: every
+  # other kube-system controller (ALB controller, ...) relies on these two
+  # selectors staying this precise to stay OFF Fargate implicitly, rather
+  # than each one needing its own anti-affinity to opt out. Broadening
+  # either selector (e.g. dropping the label match) would silently pull
+  # those controllers onto Fargate too.
 
   # CoreDNS.
   selector {

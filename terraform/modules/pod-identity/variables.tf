@@ -35,6 +35,12 @@ variable "inline_policy_json" {
   default     = null
 }
 
+variable "create_inline_policy" {
+  description = "Whether to create an inline policy from inline_policy_json"
+  type        = bool
+  default     = false
+}
+
 variable "tags" {
   description = "Tags applied to all resources created by this module."
   type        = map(string)

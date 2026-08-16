@@ -28,17 +28,20 @@ resource "aws_vpc_security_group_egress_rule" "vpc_endpoints_all_out" {
   ip_protocol       = "-1"
 }
 
-# Gateway endpoint: S3 (free, route-table based).
-resource "aws_vpc_endpoint" "s3" {
-  vpc_id            = module.vpc.vpc_id
-  service_name      = "com.amazonaws.${var.aws_region}.s3"
-  vpc_endpoint_type = "Gateway"
-  route_table_ids   = concat(module.vpc.private_route_table_ids, module.vpc.public_route_table_ids)
-  tags              = merge(var.tags, { Name = "${var.name_prefix}-s3-endpoint" })
+locals {
+  gateway_endpoint_services = ["s3", "dynamodb"]
 }
 
-# Interface endpoints: ECR (image pulls), STS (Pod Identity credential
-# exchange), CloudWatch Logs, KMS.
+resource "aws_vpc_endpoint" "gateway" {
+  for_each = toset(local.gateway_endpoint_services)
+
+  vpc_id            = module.vpc.vpc_id
+  service_name      = "com.amazonaws.${var.aws_region}.${each.value}"
+  vpc_endpoint_type = "Gateway"
+  route_table_ids   = concat(module.vpc.private_route_table_ids, module.vpc.public_route_table_ids)
+  tags              = merge(var.tags, { Name = "${var.name_prefix}-${each.value}-endpoint" })
+}
+
 locals {
   interface_endpoint_services = [
     "ecr.api",

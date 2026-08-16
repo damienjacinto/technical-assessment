@@ -22,5 +22,13 @@ cluster_version = "1.35"
 # CI runner inside the VPC, not a public CIDR allowlist.
 public_endpoint_allowed_cidrs = ["203.0.113.0/24"]
 
+# IAM principal ARNs (users/roles) beyond whichever one applies this stack
+# (enable_cluster_creator_admin_permissions already covers that one) that
+# should get cluster-admin kubectl/helm access -- e.g. an SSO-assumed role
+# used day-to-day, if `terraform apply` sometimes runs under a different
+# static IAM user/CI role. Leave empty if only one IAM principal ever
+# needs access.
+additional_admin_principal_arns = []
+
 owner      = "sre"
 repository = "https://github.com/damienjacinto/technical-assessment"

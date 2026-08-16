@@ -8,5 +8,19 @@ argo-rollouts:
       limits:
         cpu: 500m
         memory: 512Mi
+    nodeSelector:
+      karpenter.sh/nodepool: tools
+    tolerations:
+      - key: dedicated
+        operator: Equal
+        value: tools
+        effect: NoSchedule
   dashboard:
     enabled: true
+    nodeSelector:
+      karpenter.sh/nodepool: tools
+    tolerations:
+      - key: dedicated
+        operator: Equal
+        value: tools
+        effect: NoSchedule

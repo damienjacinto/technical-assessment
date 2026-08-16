@@ -6,9 +6,6 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 6.0"
     }
-    # Used only by module.eks, to auto-detect the applying machine's public
-    # IP as a fallback for public_endpoint_allowed_cidrs -- see that
-    # module's versions.tf and main.tf.
     http = {
       source  = "hashicorp/http"
       version = "~> 3.0"

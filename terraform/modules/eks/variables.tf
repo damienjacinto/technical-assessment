@@ -49,6 +49,12 @@ variable "public_endpoint_allowed_cidrs" {
   }
 }
 
+variable "additional_admin_principal_arns" {
+  description = "Extra IAM principal ARNs (users or roles) to grant cluster-admin access via EKS Access Entries"
+  type        = list(string)
+  default     = []
+}
+
 variable "cluster_enabled_log_types" {
   description = "Control plane log types shipped to CloudWatch Logs. Default is all five EKS supports."
   type        = list(string)

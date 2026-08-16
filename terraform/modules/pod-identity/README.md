@@ -28,6 +28,7 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | EKS cluster the Pod Identity association is created against. | `string` | n/a | yes |
+| <a name="input_create_inline_policy"></a> [create\_inline\_policy](#input\_create\_inline\_policy) | Whether to create an inline policy from inline\_policy\_json | `bool` | `false` | no |
 | <a name="input_inline_policy_json"></a> [inline\_policy\_json](#input\_inline\_policy\_json) | Optional inline least-privilege policy JSON, for cases where no suitable AWS managed policy exists. | `string` | `null` | no |
 | <a name="input_managed_policy_arns"></a> [managed\_policy\_arns](#input\_managed\_policy\_arns) | AWS managed policy ARNs to attach to this role. | `list(string)` | `[]` | no |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix used to name resources created by this module. | `string` | n/a | yes |

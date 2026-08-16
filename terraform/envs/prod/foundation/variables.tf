@@ -40,6 +40,12 @@ variable "public_endpoint_allowed_cidrs" {
   default     = []
 }
 
+variable "additional_admin_principal_arns" {
+  description = "Extra IAM principal ARNs (users/roles) granted cluster-admin EKS Access Entries -- see terraform/modules/eks/variables.tf for why enable_cluster_creator_admin_permissions alone isn't enough for an operator who authenticates under more than one IAM principal."
+  type        = list(string)
+  default     = []
+}
+
 variable "owner" {
   description = "Team tag value."
   type        = string

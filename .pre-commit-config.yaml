@@ -36,36 +36,13 @@ repos:
           - --args=--config=__GIT_WORKING_DIR__/.tflint.hcl
       - id: terraform_checkov
         args:
-          # LOG_LEVEL=ERROR: checkov logs a WARNING per external registry
-          # module ("--download-external-modules flag is required") even
-          # with --quiet/--compact, since that's a scan-results verbosity
-          # flag, not a logging-level one. We don't want
-          # --download-external-modules itself (network fetch of every
-          # module on every run just to silence a log line, for modules
-          # already version-pinned via the registry's semver system --
-          # see .checkov.yaml's CKV_TF_1 skip), so raise the log
-          # threshold above WARNING instead.
           - --env-vars=LOG_LEVEL=ERROR
           - --args=--config-file=__GIT_WORKING_DIR__/.checkov.yaml
           - --args=--compact
           - --args=--quiet
       - id: terraform_docs
-        # Only the 8 reusable child modules get a generated README --
-        # the 3 root stacks (bootstrap, envs/prod/{foundation,platform})
-        # are compositions documented by the top-level README.md and
-        # docs/ARCHITECTURE.md instead, not standalone modules with an
-        # inputs/outputs contract worth auto-documenting the same way.
         files: '^terraform/modules/'
         args:
-          # Relative, not __GIT_WORKING_DIR__-prefixed like the hooks
-          # above: this specific hook's own script (hooks/terraform_docs.sh
-          # in antonbabenko/pre-commit-terraform) already prepends $(pwd)
-          # to whatever follows --config= (to support relative config
-          # paths across its own per-module-directory pushd/popd loop) --
-          # an already-absolute __GIT_WORKING_DIR__ path would get that
-          # prepended a second time, doubling the path and failing to
-          # find the file. Confirmed by reading that script directly,
-          # not assumed.
           - --args=--config=.terraform-docs.yml
 
   - repo: local

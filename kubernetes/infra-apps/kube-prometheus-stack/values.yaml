@@ -5,10 +5,21 @@
 # spread across AZs with its own PDB, so observability isn't itself a
 # single point of failure during an incident.
 kube-prometheus-stack:
+  prometheusOperator:
+    nodeSelector: &tools-node-selector
+      karpenter.sh/nodepool: tools
+    tolerations: &tools-tolerations
+      - key: dedicated
+        operator: Equal
+        value: tools
+        effect: NoSchedule
+
   prometheus:
     prometheusSpec:
       replicas: 2
       retention: 15d
+      nodeSelector: *tools-node-selector
+      tolerations: *tools-tolerations
       storageSpec:
         volumeClaimTemplate:
           spec:
@@ -48,12 +59,16 @@ kube-prometheus-stack:
   alertmanager:
     alertmanagerSpec:
       replicas: 2
+      nodeSelector: *tools-node-selector
+      tolerations: *tools-tolerations
     podDisruptionBudget:
       enabled: true
       minAvailable: 1
 
   grafana:
     replicas: 2
+    nodeSelector: *tools-node-selector
+    tolerations: *tools-tolerations
     persistence:
       enabled: true
       size: 10Gi
@@ -65,3 +80,7 @@ kube-prometheus-stack:
     podDisruptionBudget:
       enabled: true
       minAvailable: 1
+
+  kube-state-metrics:
+    nodeSelector: *tools-node-selector
+    tolerations: *tools-tolerations

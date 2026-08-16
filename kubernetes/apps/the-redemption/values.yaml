@@ -1,10 +1,16 @@
-# Defaults here are for local `helm lint`/`helm template` testing. In the
-# real deployment, ArgoCD's Application (terraform/modules/argocd) injects
-# environment/ingress.wafAclArn via valuesObject, overriding these -- that's
-# the seam between Terraform-owned infra and GitOps-owned app config
-# documented in docs/ARCHITECTURE.md. No serviceAccount.roleArn here: EKS
-# Pod Identity pairs this ServiceAccount with its IAM role entirely on the
-# AWS side, so there's nothing to inject into the chart for it.
+# Defaults here are for local `helm lint`/`helm template` testing (and the
+# fallback when there's no live cluster to look up against -- see
+# ingress.wafAclArn below). In the real deployment: `environment` is
+# overridden via valuesObject in the static Application manifest
+# (kubernetes/argocd-apps/the-redemption.yaml), since it's git-known and
+# doesn't need a live Terraform value; `ingress.wafAclArn` is overridden by
+# templates/ingress.yaml's lookup() reading a ConfigMap Terraform writes
+# (terraform/envs/prod/platform/main.tf) -- see that ConfigMap's own
+# comment and kubernetes/argocd-apps/NOTES.md for why these two values,
+# which used to both go through the same valuesObject seam, now take
+# different paths. No serviceAccount.roleArn here: EKS Pod Identity pairs
+# this ServiceAccount with its IAM role entirely on the AWS side, so
+# there's nothing to inject into the chart for it.
 
 image:
   # Placeholder standing in for the real application image -- business
@@ -23,7 +29,9 @@ environment: prod
 port: 8080
 
 ingress:
-  # Placeholder default; ArgoCD injects the real WAF ACL ARN.
+  # Placeholder default; templates/ingress.yaml's lookup() overrides this
+  # with the real WAF ACL ARN whenever a live cluster is available to
+  # look up against.
   wafAclArn: ""
   host: redemption.example.com
 

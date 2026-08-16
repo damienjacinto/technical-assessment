@@ -4,5 +4,5 @@ description: Wrapper chart pinning upstream Kyverno + this stack's admission pol
 version: 0.1.0
 dependencies:
   - name: kyverno
-    version: "3.3.0"
+    version: "3.8.2"
     repository: "https://kyverno.github.io/kyverno/"

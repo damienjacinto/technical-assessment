@@ -13,3 +13,13 @@ external-secrets:
       memory: 128Mi
     limits:
       memory: 256Mi
+  global: &tools-scheduling
+    nodeSelector:
+      karpenter.sh/nodepool: tools
+    tolerations:
+      - key: dedicated
+        operator: Equal
+        value: tools
+        effect: NoSchedule
+  webhook: *tools-scheduling
+  certController: *tools-scheduling

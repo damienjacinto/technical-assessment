@@ -2,6 +2,20 @@
 # associated via annotation -- this is the actual association point for the
 # WebACL Terraform creates (the ALB itself is created by the AWS Load
 # Balancer Controller at runtime from this Ingress, not by Terraform).
+#
+# WAF ACL ARN: read live via lookup() rather than a plain .Values reference
+# -- the-redemption's Application is static YAML (kubernetes/argocd-apps),
+# so there's no valuesObject injection point left for a value only known
+# after Terraform creates the WAF ACL. terraform/envs/prod/platform/main.tf
+# writes it into a kube-system ConfigMap instead; lookup() reads it here at
+# render time. lookup() returns empty outside a live cluster (local
+# `helm lint`/`helm template`, CI's scripts/validate-kubernetes.sh), so
+# this falls back to .Values.ingress.wafAclArn's placeholder in that case.
+{{- $wafConfig := lookup "v1" "ConfigMap" "kube-system" "redemption-waf-config" }}
+{{- $wafAclArn := .Values.ingress.wafAclArn }}
+{{- if $wafConfig }}
+{{- $wafAclArn = $wafConfig.data.wafAclArn }}
+{{- end }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -14,7 +28,7 @@ metadata:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/healthcheck-path: /healthz
-    alb.ingress.kubernetes.io/wafv2-acl-arn: {{ .Values.ingress.wafAclArn | quote }}
+    alb.ingress.kubernetes.io/wafv2-acl-arn: {{ $wafAclArn | quote }}
 spec:
   rules:
     - host: {{ .Values.ingress.host }}

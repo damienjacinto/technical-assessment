@@ -23,6 +23,11 @@ variable "private_subnet_ids" {
   type        = list(string)
 }
 
+variable "kms_key_arn" {
+  description = "KMS key ARN used to encrypt the Fargate pod log group (security-baseline's general-purpose key)."
+  type        = string
+}
+
 variable "tags" {
   description = "Tags applied to all resources created by this module."
   type        = map(string)

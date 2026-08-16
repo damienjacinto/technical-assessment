@@ -1,4 +1,3 @@
-# Values nested under "keda:" -- the dependency name in Chart.yaml.
 keda:
   resources:
     operator:
@@ -11,3 +10,10 @@ keda:
   podDisruptionBudget:
     operator:
       minAvailable: 1
+  nodeSelector:
+    karpenter.sh/nodepool: tools
+  tolerations:
+    - key: dedicated
+      operator: Equal
+      value: tools
+      effect: NoSchedule

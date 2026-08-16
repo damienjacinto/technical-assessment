@@ -4,5 +4,5 @@ description: Wrapper chart pinning upstream Argo Rollouts for GitOps deployment 
 version: 0.1.0
 dependencies:
   - name: argo-rollouts
-    version: "2.38.0"
+    version: "2.41.1"
     repository: "https://argoproj.github.io/argo-helm"

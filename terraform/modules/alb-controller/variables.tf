@@ -19,9 +19,9 @@ variable "aws_region" {
 }
 
 variable "chart_version" {
-  description = "aws-load-balancer-controller Helm chart version to install."
+  description = "aws-load-balancer-controller Helm chart version to install. main.tf's IAM policy is reconciled against this exact version's app release -- re-verify that reconciliation whenever this changes."
   type        = string
-  default     = "1.10.0"
+  default     = "3.5.0"
 }
 
 variable "tags" {

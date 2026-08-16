@@ -7,6 +7,19 @@ opentelemetry-collector:
   mode: deployment
   replicaCount: 2
 
+  # Dedicated tooling NodePool (terraform/modules/karpenter) -- keeps this
+  # off the-redemption's on-demand-baseline/spot-burst capacity. Safe
+  # precisely because mode is "deployment" (see comment above) -- were
+  # this a DaemonSet, restricting it to one NodePool would break its
+  # per-node coverage.
+  nodeSelector:
+    karpenter.sh/nodepool: tools
+  tolerations:
+    - key: dedicated
+      operator: Equal
+      value: tools
+      effect: NoSchedule
+
   image:
     repository: otel/opentelemetry-collector-contrib
 

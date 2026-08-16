@@ -58,8 +58,22 @@ module "eks" {
     resources = ["secrets"]
   }
 
-  # No IRSA: every ServiceAccount in this stack authenticates via EKS Pod Identity instead
-  enable_irsa = false
+  enable_irsa                              = true
+  enable_cluster_creator_admin_permissions = true
+
+  access_entries = {
+    for idx, arn in var.additional_admin_principal_arns : "admin-${idx}" => {
+      principal_arn = arn
+      policy_associations = {
+        admin = {
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = {
+            type = "cluster"
+          }
+        }
+      }
+    }
+  }
 
   iam_role_additional_policies = {
     AmazonEKSVPCResourceController = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"

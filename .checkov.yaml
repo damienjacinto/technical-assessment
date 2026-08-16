@@ -76,3 +76,17 @@ skip-check:
   - CKV_AWS_18 # S3 bucket should have access logging enabled
   - CKV_AWS_144 # S3 bucket should have cross-region replication enabled
   - CKV2_AWS_62 # S3 bucket should have event notifications enabled
+
+  # The Fargate pod log group (terraform/modules/fargate-profile/main.tf)
+  # holds operational/debugging logs (CoreDNS queries, Karpenter's
+  # provisioning decisions), not a security audit trail like the WAF log
+  # group (which does meet the 1-year bar) -- 30 days is a deliberate
+  # right-size, not an oversight. Global, not an inline #checkov:skip on
+  # the resource itself, because this specific check doesn't honor inline
+  # skip comments in this checkov version (3.3.8) -- confirmed directly:
+  # a same-line trailing comment on the resource, and a leading comment
+  # line, were both silently ignored, while the identical pattern works
+  # fine for other (non-graph-based) checks elsewhere in this repo. Only
+  # one resource in the whole tree is currently short of a year, so this
+  # has no broader blast radius today -- revisit if that stops being true.
+  - CKV_AWS_338 # CloudWatch log group should retain logs for at least 1 year

@@ -12,3 +12,8 @@ output "pod_execution_role_arn" {
   description = "IAM role ARN Fargate assumes to run pods on this profile."
   value       = aws_iam_role.fargate_pod_execution.arn
 }
+
+output "log_group_name" {
+  description = "CloudWatch Logs group Fargate pod logs are shipped to, once the aws-logging ConfigMap (terraform/envs/prod/platform/main.tf) points the log router at it."
+  value       = aws_cloudwatch_log_group.fargate.name
+}

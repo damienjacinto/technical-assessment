@@ -23,22 +23,31 @@ variable "vpc_cidr" {
   type        = string
 }
 
-variable "karpenter_chart_version" {
-  description = "karpenter Helm chart version to install."
+variable "cluster_security_group_id" {
+  description = "EKS cluster security group ID. A SecurityGroupPolicy's custom security group replaces the cluster security group Fargate normally attaches by default, not adds to it -- without this included alongside the custom SG, Fargate pod provisioning times out repeatedly (AWS-documented behavior, not an edge case)."
   type        = string
-  default     = "1.1.1"
+}
+
+variable "oidc_provider_arn" {
+  description = "ARN of the cluster's OIDC identity provider -- the controller's IRSA trust policy Federated principal. Pod Identity doesn't work on Fargate (see this module's own main.tf), so the controller -- the one Fargate-hosted, AWS-API-consuming component in this stack -- uses IRSA instead."
+  type        = string
+}
+
+variable "oidc_provider" {
+  description = "Cluster OIDC issuer without the https:// prefix -- the controller's IRSA trust policy condition-key prefix."
+  type        = string
+}
+
+variable "karpenter_chart_version" {
+  description = "karpenter Helm chart version to install. Must be >= 1.9 for Kubernetes 1.35"
+  type        = string
+  default     = "1.14.0"
 }
 
 variable "bottlerocket_ami_version" {
-  description = <<-EOT
-    Bottlerocket alias version for the EC2NodeClass's amiSelectorTerms.
-    Pinned per docs/ARCHITECTURE.md's "latest-minus-one, not bleeding edge"
-    policy -- see https://github.com/bottlerocket-os/bottlerocket/releases.
-    Bumping this is a deliberate PR, same as every other pinned version in
-    this repo.
-  EOT
+  description = "Bottlerocket alias version for the EC2NodeClass amiSelectorTerms"
   type        = string
-  default     = "v1.61.0"
+  default     = "v1.64.0"
 }
 
 variable "tags" {

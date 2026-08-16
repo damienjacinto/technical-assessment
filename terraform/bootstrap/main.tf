@@ -25,8 +25,6 @@ terraform {
       version = "~> 6.0"
     }
   }
-
-  # Intentionally local state for this stack only.
 }
 
 provider "aws" {
@@ -43,15 +41,12 @@ provider "aws" {
 }
 
 locals {
-  # Globally-unique bucket name: project + purpose.
   state_bucket_name = "${var.project}-tfstate"
 }
 
 resource "aws_s3_bucket" "state" {
   bucket = local.state_bucket_name
-
-  # Deliberately no force_destroy: state buckets should never be trivially
-  # deletable via `terraform destroy` run against this stack by mistake.
+  # Deliberately no force_destroy
 }
 
 resource "aws_s3_bucket_versioning" "state" {
