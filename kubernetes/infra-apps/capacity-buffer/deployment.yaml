@@ -1,0 +1,42 @@
+# Overprovisioning buffer for *unplanned* spikes (docs/ARCHITECTURE.md) --
+# KEDA's cron only pre-warms *known* flash sales. Occupies ~1 node's
+# headroom on spot-burst so real traffic preempts it in seconds, not
+# 30s-2min. No PDB on purpose: must be freely, instantly evictable.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: capacity-buffer
+  labels:
+    app.kubernetes.io/name: capacity-buffer
+    app.kubernetes.io/part-of: redemption
+    app.kubernetes.io/managed-by: argocd
+    environment: prod
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: capacity-buffer
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: capacity-buffer
+        app.kubernetes.io/part-of: redemption
+        environment: prod
+    spec:
+      priorityClassName: capacity-buffer
+      terminationGracePeriodSeconds: 0
+      nodeSelector:
+        capacity-tier: spot-burst
+      containers:
+        - name: pause
+          image: registry.k8s.io/pause:3.9
+          resources:
+            requests:
+              # ~roughly one node's worth of headroom, split across
+              # replicas -- tune against the instance types in the
+              # spot-burst NodePool.
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

@@ -1,0 +1,22 @@
+# No role-arn annotation: this ServiceAccount authenticates via EKS Pod
+# Identity, whose pairing lives entirely on the AWS side, not this chart.
+external-secrets:
+  serviceAccount:
+    create: true
+    name: external-secrets
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      memory: 256Mi
+  global: &tools-scheduling
+    nodeSelector:
+      karpenter.sh/nodepool: tools
+    tolerations:
+      - key: dedicated
+        operator: Equal
+        value: tools
+        effect: NoSchedule
+  webhook: *tools-scheduling
+  certController: *tools-scheduling

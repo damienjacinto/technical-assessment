@@ -1,0 +1,47 @@
+# `release: kube-prometheus-stack` label isn't decoration: Prometheus's
+# default ruleSelector requires it, or these alerts silently never fire.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: the-redemption-slo
+  namespace: the-redemption
+  labels:
+    {{- include "the-redemption.labels" . | nindent 4 }}
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: the-redemption.slo
+      rules:
+        - alert: TheRedemptionHighErrorRate
+          expr: |
+            sum(rate(http_requests_total{job="the-redemption",status=~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total{job="the-redemption"}[5m])) > 0.01
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "the-redemption error rate above 1% for 5m"
+            description: "Deduction requests are failing above SLO -- check the latest Rollout and the AnalysisTemplate's own error-rate metric."
+
+        - alert: TheRedemptionHighLatency
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(http_request_duration_seconds_bucket{job="the-redemption"}[5m])) by (le)
+            ) > 0.5
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "the-redemption p99 latency above 500ms for 5m"
+            description: "Check Tempo traces for the slow path; may indicate the-redemption is under-scaled for current load."
+
+        - alert: TheRedemptionLowAvailability
+          expr: |
+            sum(up{job="the-redemption"}) / count(up{job="the-redemption"}) < 0.66
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Fewer than 2/3 of the-redemption replicas are up"
+            description: "Possible AZ-correlated failure -- check topology spread and whether an AZ is degraded (see docs/RUNBOOK.md)."

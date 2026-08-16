@@ -1,0 +1,83 @@
+# Self-hosted, not AWS-managed AMP/AMG (docs/ARCHITECTURE.md trade-off):
+# more Day-2 toil, in exchange for full control over retention/PromQL.
+# PVC-backed, spread across AZs with its own PDB.
+kube-prometheus-stack:
+  prometheusOperator:
+    nodeSelector: &tools-node-selector
+      karpenter.sh/nodepool: tools
+    tolerations: &tools-tolerations
+      - key: dedicated
+        operator: Equal
+        value: tools
+        effect: NoSchedule
+
+  prometheus:
+    prometheusSpec:
+      replicas: 2
+      retention: 15d
+      nodeSelector: *tools-node-selector
+      tolerations: *tools-tolerations
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 50Gi
+      resources:
+        requests:
+          cpu: 500m
+          memory: 2Gi
+        limits:
+          memory: 4Gi
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      # Scrapes the OTel Collector's Prometheus-exporter endpoint (metrics
+      # that originated as OTLP from the-redemption).
+      additionalScrapeConfigs:
+        - job_name: otel-collector
+          kubernetes_sd_configs:
+            - role: endpoints
+              namespaces:
+                names: [observability]
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_service_name]
+              regex: otel-collector.*
+              action: keep
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1
+
+  alertmanager:
+    alertmanagerSpec:
+      replicas: 2
+      nodeSelector: *tools-node-selector
+      tolerations: *tools-tolerations
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1
+
+  grafana:
+    replicas: 2
+    nodeSelector: *tools-node-selector
+    tolerations: *tools-tolerations
+    persistence:
+      enabled: true
+      size: 10Gi
+    additionalDataSources:
+      - name: Tempo
+        type: tempo
+        url: http://tempo.observability.svc.cluster.local:3100
+        access: proxy
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1
+
+  kube-state-metrics:
+    nodeSelector: *tools-node-selector
+    tolerations: *tools-tolerations

@@ -1,0 +1,26 @@
+kyverno:
+  replicaCount: 3
+  admissionController:
+    replicas: 3
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        memory: 512Mi
+    nodeSelector: &tools-node-selector
+      karpenter.sh/nodepool: tools
+    tolerations: &tools-tolerations
+      - key: dedicated
+        operator: Equal
+        value: tools
+        effect: NoSchedule
+  backgroundController:
+    nodeSelector: *tools-node-selector
+    tolerations: *tools-tolerations
+  cleanupController:
+    nodeSelector: *tools-node-selector
+    tolerations: *tools-tolerations
+  reportsController:
+    nodeSelector: *tools-node-selector
+    tolerations: *tools-tolerations

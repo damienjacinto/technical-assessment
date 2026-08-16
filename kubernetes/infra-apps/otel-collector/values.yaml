@@ -1,0 +1,62 @@
+# Gateway deployment (not per-node DaemonSet): the-redemption pushes OTLP
+# here directly, fanned out to Prometheus/Tempo (docs/ARCHITECTURE.md).
+opentelemetry-collector:
+  mode: deployment
+  replicaCount: 2
+
+  # Dedicated tooling NodePool -- safe only because mode is "deployment";
+  # a DaemonSet restricted to one NodePool would break per-node coverage.
+  nodeSelector:
+    karpenter.sh/nodepool: tools
+  tolerations:
+    - key: dedicated
+      operator: Equal
+      value: tools
+      effect: NoSchedule
+
+  image:
+    repository: otel/opentelemetry-collector-contrib
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
+
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+    exporters:
+      # Prometheus scrapes this Collector's /metrics endpoint (see
+      # kube-prometheus-stack's ServiceMonitor for the Collector in that
+      # chart's values.yaml).
+      prometheus:
+        endpoint: 0.0.0.0:8889
+      otlp/tempo:
+        endpoint: tempo.observability.svc.cluster.local:4317
+        tls:
+          insecure: true
+    service:
+      pipelines:
+        metrics:
+          receivers: [otlp]
+          exporters: [prometheus]
+        traces:
+          receivers: [otlp]
+          exporters: [otlp/tempo]
+
+  ports:
+    metrics:
+      enabled: true
+      containerPort: 8889
+      servicePort: 8889

@@ -1,0 +1,11 @@
+# Lower than the-redemption's (default/unset priority), so the scheduler
+# always preempts capacity-buffer pods first when real traffic needs room.
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: capacity-buffer
+value: -1
+globalDefault: false
+description: >-
+  Overprovisioning placeholder pods. Freely, instantly preemptible --
+  never used by real workloads.

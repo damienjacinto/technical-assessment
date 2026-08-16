@@ -1,0 +1,52 @@
+# Defaults here are for local helm lint/template (see ingress.albSecurityGroupId
+# below). `environment` comes from the static Application's valuesObject;
+# `albSecurityGroupId` comes from templates/ingress.yaml's lookup() reading
+# a Terraform-written ConfigMap instead (see NOTES.md for why they differ).
+
+image:
+  # Placeholder image -- business logic is out of scope; any HTTP server
+  # exposing /healthz works here.
+  repository: hashicorp/http-echo
+  tag: "1.0"
+
+# Steady-state floor; KEDA governs scaling beyond it (Karpenter holds no
+# floor of its own -- docs/ARCHITECTURE.md).
+replicaCount: 3
+
+environment: prod
+port: 8080
+
+ingress:
+  # Placeholder; templates/ingress.yaml's lookup() overrides with the
+  # real ALB security group ID on a live cluster.
+  albSecurityGroupId: ""
+  host: redemption.example.com
+
+otel:
+  collectorEndpoint: "http://otel-collector.observability.svc.cluster.local:4317"
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    memory: 512Mi
+
+autoscaling:
+  maxReplicaCount: 60
+  # KEDA cron pre-warm for *known* sales (docs/ARCHITECTURE.md); example
+  # is a placeholder, sync with karpenter/main.tf's blackout windows.
+  flashSale:
+    cronStart: "0 12 * * 5"
+    cronEnd: "0 14 * * 5"
+    desiredReplicas: 30
+
+pdb:
+  minAvailable: "66%"
+
+network:
+  # Must match terraform/envs/prod/foundation's vpc_cidr.
+  vpcCidr: "10.0.0.0/16"
+
+prometheus:
+  address: "http://kube-prometheus-stack-prometheus.observability.svc.cluster.local:9090"

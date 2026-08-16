@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: the-redemption
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  labels:
+    app.kubernetes.io/part-of: redemption
+    app.kubernetes.io/managed-by: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/damienjacinto/technical-assessment.git
+    targetRevision: main
+    path: kubernetes/apps/the-redemption
+    helm:
+      # environment is static/git-known; the ALB security group ID isn't
+      # (Terraform-created), so it's deliberately not set here -- see
+      # templates/ingress.yaml's lookup() instead.
+      valuesObject:
+        environment: prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: the-redemption
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

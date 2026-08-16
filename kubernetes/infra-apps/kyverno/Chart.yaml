@@ -1,0 +1,8 @@
+apiVersion: v2
+name: kyverno
+description: Wrapper chart pinning upstream Kyverno + this stack's admission policies for GitOps deployment via ArgoCD
+version: 0.1.0
+dependencies:
+  - name: kyverno
+    version: "3.8.2"
+    repository: "https://kyverno.github.io/kyverno/"

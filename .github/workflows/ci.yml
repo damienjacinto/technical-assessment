@@ -1,0 +1,73 @@
+# Runs the exact same checks as `pre-commit run --all-files`
+# (.pre-commit-config.yaml) -- one source of truth, changes go there.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pre-commit:
+    name: pre-commit (terraform fmt/validate/tflint/checkov/docs, helm, kubeconform)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "~1.10"
+          terraform_wrapper: false
+
+      - name: Set up TFLint
+        uses: terraform-linters/setup-tflint@v6
+        with:
+          tflint_version: v0.54.0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install checkov
+        run: pip install checkov
+
+      - name: Install kubeconform
+        run: |
+          curl -sL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz \
+            | tar xz kubeconform
+          sudo mv kubeconform /usr/local/bin/
+
+      - name: Install terraform-docs
+        env:
+          # Pinned, not `.../releases/latest`: committed READMEs were
+          # generated with this version, and formatting drifts between
+          # releases -- "latest" would fail this hook on unrelated runs.
+          TERRAFORM_DOCS_VERSION: v0.19.0
+        run: |
+          url="https://github.com/terraform-docs/terraform-docs/releases/download/${TERRAFORM_DOCS_VERSION}/terraform-docs-${TERRAFORM_DOCS_VERSION}-linux-amd64.tar.gz"
+          curl -sL "$url" | tar xz terraform-docs
+          sudo mv terraform-docs /usr/local/bin/
+
+      - name: Cache pre-commit environments
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-3|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
+
+      - name: Run pre-commit
+        run: |
+          python -m pip install pre-commit
+          pre-commit run --show-diff-on-failure --color=always --all-files

@@ -1,0 +1,51 @@
+# One ApplicationSet for all 7 identically-shaped infra-apps -- only name
+# + namespace differ, expressed as list-generator data instead of 7
+# copy-pasted files. the-redemption stays its own Application (needs an
+# extra Helm value and a different source path prefix).
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: infra-apps
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - name: capacity-buffer
+            namespace: kube-system
+          - name: keda
+            namespace: keda
+          - name: argo-rollouts
+            namespace: argo-rollouts
+          - name: kyverno
+            namespace: kyverno
+          - name: external-secrets
+            namespace: external-secrets
+          - name: otel-collector
+            namespace: observability
+          - name: kube-prometheus-stack
+            namespace: observability
+  template:
+    metadata:
+      name: "{{name}}"
+      namespace: argocd
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+      labels:
+        app.kubernetes.io/part-of: redemption
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/damienjacinto/technical-assessment.git
+        targetRevision: main
+        path: "kubernetes/infra-apps/{{name}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{namespace}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

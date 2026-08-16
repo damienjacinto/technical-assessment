@@ -1,0 +1,31 @@
+# KEDA takes the max of two triggers: Prometheus request-rate (CPU/memory
+# lags a step-change), and cron pre-warming ahead of a *known* flash sale
+# so pods/nodes exist before the 10x step hits (docs/ARCHITECTURE.md).
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: the-redemption
+  namespace: the-redemption
+  labels:
+    {{- include "the-redemption.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: argoproj.io/v1alpha1
+    kind: Rollout
+    name: the-redemption
+  minReplicaCount: {{ .Values.replicaCount }}
+  maxReplicaCount: {{ .Values.autoscaling.maxReplicaCount }}
+  cooldownPeriod: 120
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: {{ .Values.prometheus.address }}
+        metricName: the-redemption-requests-per-second
+        threshold: "50"
+        query: sum(rate(http_requests_total{job="the-redemption"}[1m]))
+    - type: cron
+      metadata:
+        timezone: UTC
+        start: {{ .Values.autoscaling.flashSale.cronStart | quote }}
+        end: {{ .Values.autoscaling.flashSale.cronEnd | quote }}
+        desiredReplicas: {{ .Values.autoscaling.flashSale.desiredReplicas | quote }}

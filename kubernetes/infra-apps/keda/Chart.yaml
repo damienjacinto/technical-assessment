@@ -1,0 +1,8 @@
+apiVersion: v2
+name: keda
+description: Wrapper chart pinning upstream KEDA for GitOps deployment via ArgoCD
+version: 0.1.0
+dependencies:
+  - name: keda
+    version: "2.20.2"
+    repository: "https://kedacore.github.io/charts"

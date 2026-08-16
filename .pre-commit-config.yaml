@@ -1,0 +1,61 @@
+# pre-commit run --all-files   to check everything once
+# pre-commit install            to run automatically on every commit
+# Mirrors .github/workflows/ci.yml -- if it fails here, it fails there.
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: check-added-large-files
+      - id: detect-private-key
+      - id: check-yaml
+        name: check-yaml (static manifests only)
+        description: >-
+          Helm chart templates/ directories use Go template syntax, which
+          isn't valid raw YAML until rendered -- those are checked
+          separately by validate-kubernetes below, not here.
+        exclude: '/templates/'
+
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.108.1
+    hooks:
+      - id: terraform_fmt
+      - id: terraform_validate
+        exclude: '^terraform/modules/'
+        args:
+          - --hook-config=--retry-once-with-cleanup=true
+      - id: terraform_tflint
+        args:
+          - --args=--config=__GIT_WORKING_DIR__/.tflint.hcl
+      - id: terraform_checkov
+        args:
+          - --env-vars=LOG_LEVEL=ERROR
+          - --args=--config-file=__GIT_WORKING_DIR__/.checkov.yaml
+          - --args=--compact
+          - --args=--quiet
+      - id: terraform_docs
+        files: '^terraform/modules/'
+        args:
+          - --args=--config=.terraform-docs.yml
+
+  - repo: local
+    hooks:
+      - id: validate-kubernetes
+        name: helm lint + template + kubeconform (charts + plain manifests)
+        entry: scripts/validate-kubernetes.sh
+        language: script
+        pass_filenames: false
+        files: '^kubernetes/'
+
+      - id: lint-iam-actions
+        name: IAM policy actions one-per-line, alphabetically sorted
+        description: >-
+          Not a tflint/checkov rule -- this is a style preference (readable
+          diffs on IAM policy changes), not a correctness or security
+          check, so it's a standalone script instead.
+        entry: scripts/lint-iam-actions.py
+        language: script
+        pass_filenames: false
+        files: '^terraform/.*\.tf$'
