@@ -48,6 +48,12 @@ resource "helm_release" "karpenter" {
       nodeSelector = {
         "eks.amazonaws.com/compute-type" = "fargate"
       }
+      controller = {
+        resources = {
+          requests = { cpu = "1", memory = "1Gi" }
+          limits   = { memory = "1Gi" }
+        }
+      }
     })
   ]
 }

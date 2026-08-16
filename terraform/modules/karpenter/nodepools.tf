@@ -190,8 +190,11 @@ resource "kubectl_manifest" "nodepool_tools" {
               operator = "In"
               values = [
                 "m6i.large",
+                "m6i.xlarge",
                 "m5.large",
-                "c6i.large"
+                "m5.xlarge",
+                "c6i.large",
+                "c6i.xlarge"
               ]
             },
             { key = "topology.kubernetes.io/zone", operator = "In", values = ["us-east-1a", "us-east-1b", "us-east-1c"] },
