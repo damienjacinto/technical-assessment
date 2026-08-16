@@ -43,8 +43,8 @@ data "aws_iam_policy_document" "karpenter_controller" {
     sid    = "AllowScopedEC2InstanceAccessActions"
     effect = "Allow"
     actions = [
-      "ec2:RunInstances",
       "ec2:CreateFleet",
+      "ec2:RunInstances",
     ]
     resources = [
       "arn:${data.aws_partition.current.partition}:ec2:${data.aws_region.current.region}::image/*",
@@ -59,8 +59,8 @@ data "aws_iam_policy_document" "karpenter_controller" {
     sid    = "AllowScopedEC2LaunchTemplateAccessActions"
     effect = "Allow"
     actions = [
-      "ec2:RunInstances",
       "ec2:CreateFleet",
+      "ec2:RunInstances",
     ]
     resources = ["arn:${data.aws_partition.current.partition}:ec2:${data.aws_region.current.region}:*:launch-template/*"]
     condition {
@@ -79,17 +79,17 @@ data "aws_iam_policy_document" "karpenter_controller" {
     sid    = "AllowScopedEC2InstanceActionsWithTags"
     effect = "Allow"
     actions = [
-      "ec2:RunInstances",
       "ec2:CreateFleet",
       "ec2:CreateLaunchTemplate",
+      "ec2:RunInstances",
     ]
     resources = [
       "arn:${data.aws_partition.current.partition}:ec2:${data.aws_region.current.region}:*:fleet/*",
       "arn:${data.aws_partition.current.partition}:ec2:${data.aws_region.current.region}:*:instance/*",
-      "arn:${data.aws_partition.current.partition}:ec2:${data.aws_region.current.region}:*:volume/*",
-      "arn:${data.aws_partition.current.partition}:ec2:${data.aws_region.current.region}:*:network-interface/*",
       "arn:${data.aws_partition.current.partition}:ec2:${data.aws_region.current.region}:*:launch-template/*",
+      "arn:${data.aws_partition.current.partition}:ec2:${data.aws_region.current.region}:*:network-interface/*",
       "arn:${data.aws_partition.current.partition}:ec2:${data.aws_region.current.region}:*:spot-instances-request/*",
+      "arn:${data.aws_partition.current.partition}:ec2:${data.aws_region.current.region}:*:volume/*",
     ]
     condition {
       test     = "StringEquals"
@@ -110,10 +110,10 @@ data "aws_iam_policy_document" "karpenter_controller" {
     resources = [
       "arn:${data.aws_partition.current.partition}:ec2:${data.aws_region.current.region}:*:fleet/*",
       "arn:${data.aws_partition.current.partition}:ec2:${data.aws_region.current.region}:*:instance/*",
-      "arn:${data.aws_partition.current.partition}:ec2:${data.aws_region.current.region}:*:volume/*",
-      "arn:${data.aws_partition.current.partition}:ec2:${data.aws_region.current.region}:*:network-interface/*",
       "arn:${data.aws_partition.current.partition}:ec2:${data.aws_region.current.region}:*:launch-template/*",
+      "arn:${data.aws_partition.current.partition}:ec2:${data.aws_region.current.region}:*:network-interface/*",
       "arn:${data.aws_partition.current.partition}:ec2:${data.aws_region.current.region}:*:spot-instances-request/*",
+      "arn:${data.aws_partition.current.partition}:ec2:${data.aws_region.current.region}:*:volume/*",
     ]
     condition {
       test     = "StringEquals"
@@ -158,8 +158,8 @@ data "aws_iam_policy_document" "karpenter_controller" {
     sid    = "AllowScopedDeletion"
     effect = "Allow"
     actions = [
-      "ec2:TerminateInstances",
       "ec2:DeleteLaunchTemplate",
+      "ec2:TerminateInstances",
     ]
     resources = [
       "arn:${data.aws_partition.current.partition}:ec2:${data.aws_region.current.region}:*:instance/*",
@@ -279,8 +279,8 @@ data "aws_iam_policy_document" "karpenter_controller" {
     effect = "Allow"
     actions = [
       "iam:AddRoleToInstanceProfile",
-      "iam:RemoveRoleFromInstanceProfile",
       "iam:DeleteInstanceProfile",
+      "iam:RemoveRoleFromInstanceProfile",
     ]
     resources = ["*"]
     condition {
