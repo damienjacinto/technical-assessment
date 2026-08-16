@@ -26,15 +26,17 @@ resource "helm_release" "alb_controller" {
       vpcId       = var.vpc_id
       region      = var.aws_region
       defaultTags = var.tags
-      # No affinity override here -- Fargate eligibility is governed at
-      # the source, by the kube-system Fargate profile's own selectors
-      # (terraform/modules/fargate-profile/main.tf), which only match
-      # k8s-app=kube-dns and app.kubernetes.io/name=karpenter. This
-      # controller's labels match neither, so it's never Fargate-eligible
-      # to begin with -- one precise selector to keep in sync, not a
-      # per-controller exclusion re-added on every chart that shouldn't
-      # run there. The chart's own configureDefaultAffinity default
-      # (podAntiAffinity spreading replicas across nodes) is left alone.
+      nodeSelector = {
+        "karpenter.sh/nodepool" = "tools"
+      }
+      tolerations = [
+        {
+          key      = "dedicated"
+          operator = "Equal"
+          value    = "tools"
+          effect   = "NoSchedule"
+        }
+      ]
     })
   ]
 }

@@ -62,9 +62,12 @@ resource "kubectl_manifest" "nodepool_on_demand_baseline" {
               key      = "node.kubernetes.io/instance-type"
               operator = "In"
               values = [
-                "m6i.large", "m6i.xlarge",
-                "m5.large", "m5.xlarge",
-                "c6i.large", "c6i.xlarge",
+                "m6i.large",
+                "m6i.xlarge",
+                "m5.large",
+                "m5.xlarge",
+                "c6i.large",
+                "c6i.xlarge"
               ]
             },
             { key = "topology.kubernetes.io/zone", operator = "In", values = ["us-east-1a", "us-east-1b", "us-east-1c"] },
@@ -183,7 +186,11 @@ resource "kubectl_manifest" "nodepool_tools" {
             {
               key      = "node.kubernetes.io/instance-type"
               operator = "In"
-              values   = ["m6i.large", "m5.large", "c6i.large"]
+              values   = [
+                "m6i.large",
+                "m5.large",
+                "c6i.large"
+              ]
             },
             { key = "topology.kubernetes.io/zone", operator = "In", values = ["us-east-1a", "us-east-1b", "us-east-1c"] },
           ]
