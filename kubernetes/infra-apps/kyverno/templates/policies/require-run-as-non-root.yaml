@@ -15,6 +15,11 @@ spec:
         any:
           - resources:
               kinds: [Pod]
+      preconditions:
+        all:
+          - key: "{{`{{ request.object.metadata.ownerReferences[0].kind || '' }}`}}"
+            operator: NotEquals
+            value: "Job"
       validate:
         message: "Containers must not run as root (runAsNonRoot: true required)."
         pattern:

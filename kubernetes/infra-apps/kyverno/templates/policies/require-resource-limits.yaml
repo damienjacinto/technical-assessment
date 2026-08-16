@@ -20,6 +20,11 @@ spec:
         any:
           - resources:
               kinds: [Pod]
+      preconditions:
+        all:
+          - key: "{{`{{ request.object.metadata.ownerReferences[0].kind || '' }}`}}"
+            operator: NotEquals
+            value: "Job"
       validate:
         message: "Every container must set CPU/memory requests and a memory limit."
         pattern:

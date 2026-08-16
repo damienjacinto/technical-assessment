@@ -1,0 +1,25 @@
+# argo-cd chart's application-controller StatefulSet has no livenessProbe
+# field at all (only readinessProbe/startupProbe), so require-probes can
+# never be satisfied via Helm values. Narrowly scoped exception instead of
+# weakening the policy for everyone else.
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: argocd-controller-probe-exception
+  namespace: argocd
+spec:
+  exceptions:
+    - policyName: require-probes
+      ruleNames:
+        - require-readiness-and-liveness-probes
+        - autogen-require-readiness-and-liveness-probes
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - StatefulSet
+          namespaces:
+            - argocd
+          names:
+            - "argocd-application-controller*"
