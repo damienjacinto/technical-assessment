@@ -2,56 +2,9 @@
 
 ## System overview
 
-```mermaid
-flowchart TB
-    subgraph internet["Internet"]
-        user["Customer traffic"]
-    end
+![System architecture diagram](architecture/excalidraw.png)
 
-    subgraph aws["AWS: single region, 3 AZs"]
-        waf["WAFv2\nmanaged rules + rate limit"]
-        alb["ALB\n(created by AWS LB Controller)"]
-
-        subgraph eks["EKS Cluster"]
-            subgraph fargate["kube-system: EKS Fargate"]
-                coredns["CoreDNS"]
-                karpctl["Karpenter controller"]
-            end
-
-            subgraph ondemand["NodePool: on-demand-baseline"]
-                podA["the-redemption pods\n(steady-state floor)"]
-            end
-
-            subgraph spot["NodePool: spot-burst"]
-                podB["the-redemption pods\n(flash-sale overflow)"]
-                buffer["capacity-buffer\n(low-priority pause pods)"]
-            end
-
-            argocd["ArgoCD"]
-            keda["KEDA"]
-            rollouts["Argo Rollouts"]
-            otel["OTel Collector"]
-        end
-
-        subgraph obs["observability namespace"]
-            prom["Prometheus + Alertmanager"]
-            graf["Grafana"]
-            tempo["Tempo"]
-        end
-    end
-
-    user --> waf --> alb --> podA
-    alb --> podB
-    podA -.->|OTLP| otel
-    podB -.->|OTLP| otel
-    otel --> prom
-    otel --> tempo
-    prom --> graf
-    tempo --> graf
-    keda -.->|scales| rollouts
-    rollouts -.->|manages| podA
-    argocd -.->|reconciles| eks
-```
+*[Editable diagram source](architecture/aws-architecture.excalidraw)*
 
 ## A. Compute & Architecture
 
@@ -135,6 +88,21 @@ flowchart TB
 - **Naming and tagging** follow one consistent pattern threaded through every layer,
   built environment-agnostic from day one.
 
+**Kyverno policies** (`kubernetes/infra-apps/kyverno`), all `Enforce`, not `Audit`.
+This is the focused set demonstrated here, not the full ruleset a production cluster
+would run :
+
+- `disallow-privileged-containers`: no `privileged: true`.
+- `require-run-as-non-root`: every container's `securityContext.runAsNonRoot: true`.
+- `require-resource-requests-limits`: CPU/memory requests and a memory *limit* required
+  on every container. No CPU limit requirement
+  compressible, so its limit still matters. Also feeds Karpenter's bin-packing math.
+- `require-probes`: every container needs both `readinessProbe` and `livenessProbe`.
+  Without it, the ALB target group and Argo Rollouts' canary analysis both lose their
+  signal for "is this pod actually healthy"
+- `disallow-latest-tag`: no mutable `:latest` image tag, so "what's running" can't
+  silently drift out from under a canary or rollback.
+
 ## D. Reliability & Observability
 
 **Measuring health**:
@@ -176,9 +144,41 @@ flowchart TB
   Karpenter/ArgoCD/Argo Rollouts). Lets the ecosystem catch up before this cluster
   runs a release; jump to newest only when a specific feature is the actual reason.
 
+- **Repo separation of responsibility.** Everything lives in one repo here for
+  assessment convenience. Enterprise: mutilple repos, each independently versioned and
+  tagged: a **Terraform modules** repo (`vpc`, `eks`, `karpenter`, ...) consumed by
+  version pin (`?ref=vX.Y.Z`), a **Terraform live** repo (`envs/`) that pins module
+  versions per environment, and an **ArgoCD/Kubernetes manifests** repo that ArgoCD
+  reconciles from. Decouples release cadence per layer.
+
 - **Task assignment: 1 Senior, 2 Junior engineers.** See
   [`TEAM-PLAN.md`](TEAM-PLAN.md) for the full breakdown, review gates, and suggested
   sequencing.
+
+## Practical simplifications vs. the enterprise-context solution
+
+A few pieces here are simplified purely to keep the project practical to build and run.
+
+- **TLS**: here, no domain, so no TLS. Enterprise: TLS terminated at the ALB with an ACM
+  cert bound to an owned domain.
+- **Access allowlisting**: both EKS API's `public_endpoint_allowed_cidrs` and
+  ALB `alb_allowlist_cidrs` auto-detect whoever's IP is running `terraform apply`.
+  Enterprise: real office/VPN CIDR ranges, or an SSM
+  bastion/private CI runner instead of a public allowlist at all.
+- **Application**: bare Flask service with OTel
+  auto-instrumentation and no business logic. Enterprise
+- **Container registry**: ECR
+  Public, pulled without registry auth. Enterprise: a private ECR repository, pulled
+  through the VPC's endpoints with scoped IAM
+- **Tooling replicas**: all infra tools (Kyverno, Argo Rollouts controller,
+  capacity-buffer, OTel Collector, Prometheus) run 1 replica, none spread
+  one-per-AZ. Enterprise: 3 replicas per tool with a topology spread constraint
+  one-per-AZ, the same AZ-failure guarantee already applied to the-redemption's own pods.
+- **Grafana / Alertmanager**: not included; `kubectl port-forward` to Prometheus is
+  today's stand-in. Enterprise: both deployed, Alertmanager wired to a real
+  receiver (PagerDuty/Slack) for on-call paging.
+- **ArgoCD UI**: no ingress, `kubectl port-forward` for now. Enterprise: reachable
+  by vpn, behind real SSO instead of local admin login.
 
 ## Trade-offs and alternatives considered
 

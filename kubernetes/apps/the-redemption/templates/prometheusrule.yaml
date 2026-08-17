@@ -14,9 +14,9 @@ spec:
       rules:
         - alert: TheRedemptionHighErrorRate
           expr: |
-            sum(rate(http_requests_total{job="the-redemption",status=~"5.."}[5m]))
+            sum(rate(http_server_request_duration_seconds_count{job="the-redemption",http_response_status_code=~"5.."}[5m]))
             /
-            sum(rate(http_requests_total{job="the-redemption"}[5m])) > 0.01
+            sum(rate(http_server_request_duration_seconds_count{job="the-redemption"}[5m])) > 0.01
           for: 5m
           labels:
             severity: critical
@@ -27,14 +27,14 @@ spec:
         - alert: TheRedemptionHighLatency
           expr: |
             histogram_quantile(0.99,
-              sum(rate(http_request_duration_seconds_bucket{job="the-redemption"}[5m])) by (le)
+              sum(rate(http_server_request_duration_seconds_bucket{job="the-redemption"}[5m])) by (le)
             ) > 0.5
           for: 5m
           labels:
             severity: warning
           annotations:
             summary: "the-redemption p99 latency above 500ms for 5m"
-            description: "Check Tempo traces for the slow path; may indicate the-redemption is under-scaled for current load."
+            description: "May indicate the-redemption is under-scaled for current load."
 
         - alert: TheRedemptionLowAvailability
           expr: |

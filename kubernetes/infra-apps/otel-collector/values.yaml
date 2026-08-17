@@ -1,8 +1,8 @@
 # Gateway deployment (not per-node DaemonSet): the-redemption pushes OTLP
-# here directly, fanned out to Prometheus/Tempo (docs/ARCHITECTURE.md).
+# here directly, exported to Prometheus (docs/ARCHITECTURE.md).
 opentelemetry-collector:
   mode: deployment
-  replicaCount: 2
+  replicaCount: 1
 
   # Chart sets no securityContext at all by default require-run-as-non-root
   # checks the container level explicitly.
@@ -47,18 +47,11 @@ opentelemetry-collector:
       # chart's values.yaml).
       prometheus:
         endpoint: 0.0.0.0:8889
-      otlp/tempo:
-        endpoint: tempo.observability.svc.cluster.local:4317
-        tls:
-          insecure: true
     service:
       pipelines:
         metrics:
           receivers: [otlp]
           exporters: [prometheus]
-        traces:
-          receivers: [otlp]
-          exporters: [otlp/tempo]
 
   ports:
     metrics:
