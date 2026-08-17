@@ -20,6 +20,10 @@ spec:
         any:
           - resources:
               kinds: [Pod]
+      exclude:
+        any:
+          - resources:
+              namespaces: [kube-system]
       preconditions:
         all:
           - key: "{{`{{ request.object.metadata.ownerReferences[0].kind || '' }}`}}"
