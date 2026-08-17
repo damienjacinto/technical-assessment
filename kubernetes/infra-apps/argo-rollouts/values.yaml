@@ -1,4 +1,8 @@
 argo-rollouts:
+  # Chart only sets runAsNonRoot at the pod level by default -- require-run-as-non-root
+  # checks the container level, so it's spelled out here too.
+  containerSecurityContext:
+    runAsNonRoot: true
   controller:
     replicas: 1
     resources:
@@ -16,6 +20,8 @@ argo-rollouts:
         effect: NoSchedule
   dashboard:
     enabled: true
+    containerSecurityContext:
+      runAsNonRoot: true
     resources:
       requests:
         cpu: 50m
