@@ -36,6 +36,10 @@
 
 ## B. Scalability Strategy
 
+![Scaling strategy diagram](architecture/scaling.png)
+
+*[Editable diagram source](architecture/scaling-strategy.excalidraw)*
+
 - **Node autoscaling: Karpenter**, two tiers separated by an *enforced* capacity
   ceiling:
   - **On-demand baseline**, sized to steady-state traffic. Once its ceiling saturates, the
