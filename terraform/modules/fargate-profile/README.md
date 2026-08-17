@@ -32,7 +32,7 @@ No modules.
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | EKS cluster this Fargate profile is created against. | `string` | n/a | yes |
 | <a name="input_kms_key_arn"></a> [kms\_key\_arn](#input\_kms\_key\_arn) | KMS key ARN used to encrypt the Fargate pod log group (security-baseline's general-purpose key). | `string` | n/a | yes |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix used to name resources created by this module. | `string` | n/a | yes |
-| <a name="input_private_subnet_ids"></a> [private\_subnet\_ids](#input\_private\_subnet\_ids) | Private subnet IDs -- Fargate profiles cannot use public subnets. | `list(string)` | n/a | yes |
+| <a name="input_private_subnet_ids"></a> [private\_subnet\_ids](#input\_private\_subnet\_ids) | Private subnet IDs. Fargate profiles cannot use public subnets. | `list(string)` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags applied to all resources created by this module. | `map(string)` | n/a | yes |
 
 ## Outputs
