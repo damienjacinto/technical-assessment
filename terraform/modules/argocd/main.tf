@@ -20,7 +20,7 @@ resource "helm_release" "argocd" {
         params = {
           "server.insecure" = false
         }
-        # Local admin login (chart default) is the only auth -- access
+        # Local admin login (chart default) is the only auth, access
         # control is the IP allowlist security group below, not identity.
         cm = {
           # Keeps high-volume, not-user-managed resources out of the UI
@@ -52,7 +52,7 @@ resource "helm_release" "argocd" {
           ])
         }
       }
-      # No ingress -- access is via kubectl port-forward, not exposed
+      # No ingress, access is via kubectl port-forward, not exposed
       # through the ALB.
       server = {
         resources = local.argocd_resources.server
@@ -106,7 +106,7 @@ resource "helm_release" "argocd" {
 
 locals {
   argocd_resources = {
-    # Holds the live+desired state of every synced resource in memory --
+    # Holds the live+desired state of every synced resource in memory
     # by far the heaviest component.
     controller = {
       requests = { cpu = "500m", memory = "512Mi" }

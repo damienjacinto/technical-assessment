@@ -1,6 +1,6 @@
 # Security Groups for Pods, scoping down from the shared cluster SG.
 # Requires AmazonEKSVPCResourceController (modules/eks/main.tf). Ports
-# are Karpenter v1 defaults -- reconcile against chart values before
+# are Karpenter v1 defaults. Reconcile against chart values before
 # bumping var.karpenter_chart_version.
 resource "aws_security_group" "controller" {
   name        = "${var.name_prefix}-karpenter-controller-sg"
@@ -10,11 +10,11 @@ resource "aws_security_group" "controller" {
 }
 
 # Unrestricted, not scoped to vpc_cidr/443: narrow egress broke the
-# controller repeatedly (EC2/SQS/Pricing APIs, Pod Identity Agent) --
+# controller repeatedly (EC2/SQS/Pricing APIs, Pod Identity Agent).
 # iam.tf's IAM policy is the real boundary here.
 resource "aws_vpc_security_group_egress_rule" "controller_all_out" {
   security_group_id = aws_security_group.controller.id
-  description       = "Unrestricted -- see comment above"
+  description       = "Unrestricted controller all out"
   cidr_ipv4         = "0.0.0.0/0"
   ip_protocol       = "-1"
 }

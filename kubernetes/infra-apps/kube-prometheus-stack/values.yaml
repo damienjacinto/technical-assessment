@@ -1,5 +1,5 @@
 # Self-hosted, not AWS-managed AMP/AMG (docs/ARCHITECTURE.md trade-off).
-# No EBS CSI driver -- Prometheus uses emptyDir, retention resets on reschedule. Grafana disabled.
+# No EBS CSI driver. Prometheus uses emptyDir, retention resets on reschedule. Grafana disabled.
 # Alertmanager and default alerting rules disabled for now (temporary).
 kube-prometheus-stack:
   prometheusOperator:

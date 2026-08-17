@@ -1,10 +1,10 @@
-# EKS control plane only -- Karpenter provisions all EC2 capacity
+# EKS control plane only. Karpenter provisions all EC2 capacity
 # (platform stage), kube-system runs on Fargate. Breaks the bootstrap
 # chicken-and-egg: Karpenter can't run only on nodes it provisions itself.
 
 # Auto-detected fallback for public_endpoint_allowed_cidrs, queried only
 # when needed (public endpoint on, no explicit CIDRs). Trade-off: makes
-# the CIDR non-deterministic across operators -- set it explicitly once
+# the CIDR non-deterministic across operators. Set it explicitly once
 # real office/VPN/CI ranges exist (modules/eks/NOTES.md).
 data "http" "my_ip" {
   count = var.public_endpoint_enabled && length(var.public_endpoint_allowed_cidrs) == 0 ? 1 : 0

@@ -1,4 +1,4 @@
-# Overprovisioning buffer for *unplanned* spikes (docs/ARCHITECTURE.md) --
+# Overprovisioning buffer for *unplanned* spikes (docs/ARCHITECTURE.md).
 # KEDA's cron only pre-warms *known* flash sales. Occupies ~1 node's
 # headroom on spot-burst so real traffic preempts it in seconds, not
 # 30s-2min. No PDB on purpose: must be freely, instantly evictable.

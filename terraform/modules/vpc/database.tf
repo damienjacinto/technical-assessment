@@ -1,5 +1,5 @@
 # Database tier: subnet group + SG allowing ingress only from the
-# private/app tier. No instance provisioned -- data layer is out of
+# private/app tier. No instance provisioned. Data layer is out of
 # scope; this is the network boundary a future decision attaches to.
 
 resource "aws_security_group" "database" {

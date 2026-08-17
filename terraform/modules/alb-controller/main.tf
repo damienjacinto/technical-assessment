@@ -1,6 +1,6 @@
 # AWS Load Balancer Controller: Pod Identity role + Helm release. Creates
-# ALB/target groups at runtime from an Ingress (not Terraform) --
-# --default-tags keeps them in this stack's tag taxonomy (see NOTES.md).
+# ALB/target groups at runtime from an Ingress (not Terraform).
+# default tag keeps them in this stack's tag taxonomy (see NOTES.md).
 
 resource "helm_release" "alb_controller" {
   name          = "aws-load-balancer-controller"

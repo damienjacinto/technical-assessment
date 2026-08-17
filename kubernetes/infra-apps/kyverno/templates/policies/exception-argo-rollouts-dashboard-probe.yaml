@@ -1,5 +1,5 @@
 # argo-rollouts chart only exposes livenessProbe/readinessProbe values for
-# the controller, not the dashboard -- require-probes can never be
+# the controller, not the dashboard. require-probes can never be
 # satisfied via values.yaml, same situation as the other sidecar/chart-gap
 # exceptions in this directory.
 apiVersion: kyverno.io/v2

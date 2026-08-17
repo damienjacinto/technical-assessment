@@ -1,6 +1,6 @@
 # Without readiness probes, the ALB target group and Argo Rollouts' own
-# canary analysis both lose their signal for "is this pod actually healthy" --
-# directly undermines the zero-downtime deployment story.
+# canary analysis both lose their signal for "is this pod actually healthy".
+# Directly undermines the zero-downtime deployment story.
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:

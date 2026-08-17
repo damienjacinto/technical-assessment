@@ -24,7 +24,7 @@ rule "terraform_deprecated_interpolation" {
 
 rule "terraform_documented_variables" {
   # Off: several variables in this repo are self-explanatory from their
-  # name+type alone (e.g. vpc_id, tags) -- a description isn't load-bearing
+  # name+type alone (e.g. vpc_id, tags) a description isn't load-bearing
   # documentation there, and requiring one everywhere would just produce
   # noise ("VPC ID." as a description) rather than real clarity.
   enabled = false
@@ -33,7 +33,7 @@ rule "terraform_documented_variables" {
 rule "terraform_required_version" {
   # Off for child modules specifically: only the three root modules
   # (terraform/bootstrap, terraform/envs/prod/{foundation,platform}) declare
-  # required_version, deliberately -- a version constraint on every child
+  # required_version, a version constraint on every child
   # module too would just be N copies of the same constraint to keep in
   # sync, not real protection, since Terraform resolves the constraint at
   # the root regardless.

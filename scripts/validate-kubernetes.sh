@@ -5,20 +5,20 @@
 #   2. kubeconform schema validation of that rendered output, against
 #      upstream Kubernetes schemas plus the community CRD catalog (covers
 #      Argo Rollouts' Rollout/AnalysisTemplate, KEDA's ScaledObject,
-#      Kyverno's ClusterPolicy, etc.) -- this catches real schema errors
+#      Kyverno's ClusterPolicy, etc.). This catches real schema errors
 #      (wrong/missing required fields) that neither "is this valid YAML"
 #      nor "does Helm render it" can. Karpenter's NodePool/EC2NodeClass are
-#      NOT covered here anymore -- they're created by terraform/modules/karpenter
+#      NOT covered here anymore. They're created by terraform/modules/karpenter
 #      now (kubernetes_manifest, not a rendered chart), so `terraform validate`
 #      is their only static check; schema errors there only surface at
 #      `apply` time against the live API server.
-#   3. kubeconform on capacity-buffer directly -- it's a plain manifest
+#   3. kubeconform on capacity-buffer directly. it's a plain manifest
 #      directory (no Chart.yaml), synced by ArgoCD's directory source, not
 #      a Helm chart, so it skips step 1.
 #
 # Run manually with: scripts/validate-kubernetes.sh
 # Runs automatically via pre-commit (see .pre-commit-config.yaml) and in CI
-# (see .github/workflows/ci.yml) -- same script both places, so a local
+# (see .github/workflows/ci.yml). Same script both places, so a local
 # pass means CI passes too.
 set -euo pipefail
 
@@ -30,7 +30,7 @@ dep_updated_dirs=()
 cleanup() {
   rm -rf "$render_dir"
   # helm dependency update fetches into charts/ and writes Chart.lock
-  # inside the repo tree (gitignored, but left on disk) -- clean those up
+  # inside the repo tree (gitignored, but left on disk). Clean those up
   # so re-running this script locally doesn't leave stale state around,
   # and so pre-commit doesn't flag "files were modified by this hook" for
   # artifacts nothing actually asked to keep.
@@ -41,7 +41,7 @@ cleanup() {
 trap cleanup EXIT
 
 # CustomResourceDefinition kind is always skipped by kubeconform (a CRD
-# manifest describes a schema, it isn't an instance of one) -- expected,
+# manifest describes a schema, it isn't an instance of one). Expected,
 # not a gap. -ignore-missing-schemas means a CRD this catalog genuinely
 # doesn't have yet is skipped with a warning rather than failing the
 # build; that trade-off is worth it here since new/uncommon CRDs

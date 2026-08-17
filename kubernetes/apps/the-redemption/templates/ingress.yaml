@@ -1,5 +1,5 @@
 # ALB target-type ip. security-groups is the access control (IP
-# allowlist, no WAF -- alb-ip-restrict-sg.tf), read via lookup() from a
+# allowlist, no WAF, alb-ip-restrict-sg.tf), read via lookup() from a
 # Terraform-written ConfigMap since this Application is static YAML.
 {{- $ingressConfig := lookup "v1" "ConfigMap" "kube-system" "redemption-ingress-config" }}
 {{- $albSecurityGroupId := .Values.ingress.albSecurityGroupId }}

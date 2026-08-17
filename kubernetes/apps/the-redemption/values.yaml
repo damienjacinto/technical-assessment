@@ -4,13 +4,13 @@
 # a Terraform-written ConfigMap instead (see NOTES.md for why they differ).
 
 image:
-  # Placeholder image -- business logic is out of scope; any HTTP server
+  # Placeholder image. Business logic is out of scope; any HTTP server
   # exposing /healthz works here.
   repository: hashicorp/http-echo
   tag: "1.0"
 
 # Steady-state floor; KEDA governs scaling beyond it (Karpenter holds no
-# floor of its own -- docs/ARCHITECTURE.md).
+# floor of its own, docs/ARCHITECTURE.md).
 replicaCount: 3
 
 environment: prod

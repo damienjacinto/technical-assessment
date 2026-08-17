@@ -1,5 +1,5 @@
 argo-rollouts:
-  # Chart only sets runAsNonRoot at the pod level by default -- require-run-as-non-root
+  # Chart only sets runAsNonRoot at the pod level by default. Require-run-as-non-root
   # checks the container level, so it's spelled out here too.
   containerSecurityContext:
     runAsNonRoot: true

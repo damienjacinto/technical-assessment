@@ -38,7 +38,6 @@ kyverno:
     nodeSelector: *tools-node-selector
     tolerations: *tools-tolerations
   reportsController:
-    # Aggregates policy reports cluster-wide -- can grow with resource count.
     resources:
       requests:
         cpu: 100m

@@ -1,5 +1,5 @@
 keda:
-  # Chart only sets runAsNonRoot at the pod level by default -- require-run-as-non-root
+  # Chart only sets runAsNonRoot at the pod level by default require-run-as-non-root
   # checks the container level, so it's spelled out here too, for all three components.
   securityContext:
     operator:
@@ -15,7 +15,7 @@ keda:
         memory: 128Mi
       limits:
         memory: 512Mi
-    # Unset falls back to the chart's own default, which sets limits.cpu -- explicit override needed.
+    # Unset falls back to the chart's own default, which sets limits.cpu, explicit override needed.
     metricServer:
       requests:
         cpu: 100m

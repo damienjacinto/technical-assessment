@@ -1,5 +1,5 @@
 # CoreDNS addon + its Security-Groups-for-Pods policy. Not in modules/eks's
-# `addons` block -- can't create before the Fargate profile exists.
+# `addons` block. Can't create before the Fargate profile exists.
 # Instantiated from platform: needs a Kubernetes provider foundation lacks.
 
 data "aws_eks_addon_version" "coredns" {
@@ -51,7 +51,7 @@ resource "aws_vpc_security_group_egress_rule" "upstream_dns" {
 
 resource "aws_vpc_security_group_egress_rule" "api_server" {
   security_group_id = aws_security_group.this.id
-  description       = "Kubernetes API server -- watches Service/Endpoints/EndpointSlice"
+  description       = "Kubernetes API server. Watches Service/Endpoints/EndpointSlice"
   cidr_ipv4         = var.vpc_cidr
   from_port         = 443
   to_port           = 443

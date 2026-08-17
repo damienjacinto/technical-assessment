@@ -69,7 +69,7 @@ output "cluster_endpoint" {
 }
 
 output "cluster_version" {
-  description = "Kubernetes version running on the EKS control plane -- platform's module.coredns needs this to pick compatible addon versions."
+  description = "Kubernetes version running on the EKS control plane. Platform's module.coredns needs this to pick compatible addon versions."
   value       = module.eks.cluster_version
 }
 
@@ -80,27 +80,27 @@ output "cluster_certificate_authority_data" {
 }
 
 output "cluster_security_group_id" {
-  description = "The EKS-managed cluster security group -- see modules/eks/outputs.tf for why this specific one, not the similarly-named-but-different alternative the upstream module also exposes."
+  description = "The EKS-managed cluster security group. See modules/eks/outputs.tf for why this specific one, not the similarly-named-but-different alternative the upstream module also exposes."
   value       = module.eks.cluster_security_group_id
 }
 
 output "oidc_provider_arn" {
-  description = "ARN of the cluster's OIDC identity provider -- platform's module.karpenter needs this for its controller's IRSA trust policy (Pod Identity doesn't work on Fargate)."
+  description = "ARN of the cluster's OIDC identity provider. Platform's module.karpenter needs this for its controller's IRSA trust policy (Pod Identity doesn't work on Fargate)."
   value       = module.eks.oidc_provider_arn
 }
 
 output "oidc_provider" {
-  description = "Cluster OIDC issuer without the https:// prefix -- platform's module.karpenter needs this for its controller's IRSA trust policy condition keys."
+  description = "Cluster OIDC issuer without the https:// prefix. Platform's module.karpenter needs this for its controller's IRSA trust policy condition keys."
   value       = module.eks.oidc_provider
 }
 
 output "fargate_log_group_name" {
-  description = "CloudWatch Logs group Fargate pod logs ship to -- platform's aws-logging ConfigMap points the Fargate log router at this."
+  description = "CloudWatch Logs group Fargate pod logs ship to. Platform's aws-logging ConfigMap points the Fargate log router at this."
   value       = module.fargate_profile.log_group_name
 }
 
 output "karpenter_node_iam_role_name_prefix" {
-  description = "Not the node role itself (created in platform) -- exposed here only as the naming convention platform must follow, so foundation stays the single source of truth for naming."
+  description = "Not the node role itself (created in platform). Exposed here only as the naming convention platform must follow, so foundation stays the single source of truth for naming."
   value       = local.name_prefix
 }
 

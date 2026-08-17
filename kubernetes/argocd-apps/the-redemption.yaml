@@ -16,7 +16,7 @@ spec:
     path: kubernetes/apps/the-redemption
     helm:
       # environment is static/git-known; the ALB security group ID isn't
-      # (Terraform-created), so it's deliberately not set here -- see
+      # (Terraform-created), so it's deliberately not set her. See
       # templates/ingress.yaml's lookup() instead.
       valuesObject:
         environment: prod

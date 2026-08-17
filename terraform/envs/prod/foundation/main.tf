@@ -1,6 +1,6 @@
 # Stage 1 of 2: everything needed before the kubernetes/helm/kubectl
 # providers can target a live cluster (platform is stage 2). VPC, EKS
-# control plane, Fargate profile, security baseline -- Pod Identity roles
+# control plane, Fargate profile, security baseline. Pod Identity roles
 # live in platform instead, alongside what actually uses them.
 
 locals {
@@ -15,7 +15,7 @@ locals {
     ManagedBy   = "terraform"
     Repository  = var.repository
     Owner       = var.owner
-    # Reserved, not yet populated -- see docs/ARCHITECTURE.md naming/tagging
+    # Reserved, not yet populated, see docs/ARCHITECTURE.md naming/tagging
     # section: these get real values when the data layer lands, rather than
     # being retrofitted later.
     CostCenter         = ""

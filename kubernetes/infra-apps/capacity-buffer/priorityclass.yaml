@@ -7,5 +7,5 @@ metadata:
 value: -1
 globalDefault: false
 description: >-
-  Overprovisioning placeholder pods. Freely, instantly preemptible --
+  Overprovisioning placeholder pods. Freely, instantly preemptible,
   never used by real workloads.

@@ -64,7 +64,7 @@ flowchart TB
   immutable OS for EKS: minimal boot footprint, fast node start.
 - Cluster-critical components CoreDNS and Karpenter run on a dedicated **EKS Fargate** profile:
   - Breaks the bootstrap chicken-and-egg: an empty cluster couldn't otherwise scale
-    itself from/to zero.
+    itself from/to zero for development environments.
   - Isolates blast radius: DNS is cluster-critical and shouldn't churn with Spot
     interruptions or an AZ failure.
   - No system node pool to size or patch: system pods never compete with app pods for

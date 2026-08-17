@@ -1,4 +1,4 @@
-# One ApplicationSet for all 7 identically-shaped infra-apps -- only name
+# One ApplicationSet for all 7 identically-shaped infra-apps. Only name
 # + namespace differ, expressed as list-generator data instead of 7
 # copy-pasted files. the-redemption stays its own Application (needs an
 # extra Helm value and a different source path prefix).

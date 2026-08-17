@@ -1,6 +1,6 @@
 # Security baseline: general-purpose KMS key (this file), the app's
 # Security-Group-for-Pods (security_group.tf), and the ALB IP allowlist
-# (alb-allowlist.tf, alb-ip-restrict-sg.tf) -- no WAF in this module.
+# (alb-allowlist.tf, alb-ip-restrict-sg.tf). No WAF in this module.
 
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
@@ -19,7 +19,7 @@ resource "aws_kms_alias" "general" {
 }
 
 data "aws_iam_policy_document" "general_kms" {
-  #checkov:skip=CKV_AWS_109:Root full-access statement mirrors AWS's own implicit default KMS key policy, not a bespoke grant -- see comment above.
+  #checkov:skip=CKV_AWS_109:Root full-access statement mirrors AWS's own implicit default KMS key policy, not a bespoke grant. See comment above.
   statement {
     sid    = "EnableIAMUserPermissions"
     effect = "Allow"

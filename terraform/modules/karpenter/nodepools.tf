@@ -1,4 +1,4 @@
-# EC2NodeClass/NodePool live here, in Terraform, not GitOps -- see main.tf.
+# EC2NodeClass/NodePool live here, in Terraform, not GitOps. See main.tf.
 # kubectl_manifest, not kubernetes_manifest: that provider fetches the
 # CRD schema at *plan* time, which fails before helm.tf installs it.
 
@@ -11,7 +11,7 @@ resource "kubectl_manifest" "ec2nodeclass" {
     }
     spec = {
       amiFamily = "Bottlerocket"
-      # Pinned (var.bottlerocket_ami_version), not "@latest" -- Karpenter's
+      # Pinned (var.bottlerocket_ami_version), not "@latest". Karpenter's
       # own docs recommend against latest for production: it drifts
       # silently with no PR attached to the change.
       amiSelectorTerms = [
@@ -99,7 +99,7 @@ resource "kubectl_manifest" "nodepool_on_demand_baseline" {
   depends_on = [kubectl_manifest.ec2nodeclass]
 }
 
-# Absorbs everything past the baseline ceiling -- the flash-sale spike
+# Absorbs everything past the baseline ceiling. The flash-sale spike
 # lands here by construction.
 resource "kubectl_manifest" "nodepool_spot_burst" {
   yaml_body = yamlencode({
@@ -157,8 +157,8 @@ resource "kubectl_manifest" "nodepool_spot_burst" {
   depends_on = [kubectl_manifest.ec2nodeclass]
 }
 
-# Dedicated tooling pool, kept off the app's own capacity via a taint --
-# only pods with a matching toleration (kubernetes/infra-apps/*/values.yaml)
+# Dedicated tooling pool, kept off the app's own capacity via a taint.
+# Only pods with a matching toleration (kubernetes/infra-apps/*/values.yaml)
 # land here. the-redemption and capacity-buffer deliberately don't get it.
 resource "kubectl_manifest" "nodepool_tools" {
   yaml_body = yamlencode({

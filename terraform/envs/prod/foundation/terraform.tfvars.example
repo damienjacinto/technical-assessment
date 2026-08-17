@@ -9,14 +9,14 @@ aws_region  = "us-east-1"
 # azs = ["us-east-1a", "us-east-1b", "us-east-1c"]
 
 vpc_cidr = "10.0.0.0/16"
-# Latest-minus-one EKS version, not bleeding edge -- see the versioning
+# Latest-minus-one EKS version, not bleeding edge. See the versioning
 # policy in terraform/modules/eks/variables.tf and docs/ARCHITECTURE.md.
 cluster_version = "1.35"
 
 # Least privilege: your office/VPN/CI runner CIDR ranges. Never 0.0.0.0/0
 # for a revenue-critical cluster's public API endpoint. Leave empty (or
 # omit) and module.eks auto-detects whoever is running `terraform apply`
-# and restricts to that machine's IP instead -- see
+# and restricts to that machine's IP instead. See
 # terraform/modules/eks/main.tf and NOTES.md. Neither is the target
 # design: access should ultimately go through an SSM bastion or private
 # CI runner inside the VPC, not a public CIDR allowlist.
@@ -24,7 +24,7 @@ public_endpoint_allowed_cidrs = []
 
 # IAM principal ARNs (users/roles) beyond whichever one applies this stack
 # (enable_cluster_creator_admin_permissions already covers that one) that
-# should get cluster-admin kubectl/helm access -- e.g. an SSO-assumed role
+# should get cluster-admin kubectl/helm access. E.g. an SSO-assumed role
 # used day-to-day, if `terraform apply` sometimes runs under a different
 # static IAM user/CI role. Leave empty if only one IAM principal ever
 # needs access.

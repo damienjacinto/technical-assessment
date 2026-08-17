@@ -5,7 +5,7 @@ variable "project" {
 }
 
 variable "environment" {
-  description = "This is the \"prod\" instance of the per-environment pattern -- see docs/ARCHITECTURE.md naming/tagging section. A future terraform/envs/staging/ would set this to \"staging\"."
+  description = "This is the \"prod\" instance of the per-environment pattern. See docs/ARCHITECTURE.md naming/tagging section. A future terraform/envs/staging/ would set this to \"staging\"."
   type        = string
   default     = "prod"
 }
@@ -41,13 +41,13 @@ variable "public_endpoint_allowed_cidrs" {
 }
 
 variable "additional_admin_principal_arns" {
-  description = "Extra IAM principal ARNs (users/roles) granted cluster-admin EKS Access Entries -- see terraform/modules/eks/variables.tf for why enable_cluster_creator_admin_permissions alone isn't enough for an operator who authenticates under more than one IAM principal."
+  description = "Extra IAM principal ARNs (users/roles) granted cluster-admin EKS Access Entries. See terraform/modules/eks/variables.tf for why enable_cluster_creator_admin_permissions alone isn't enough for an operator who authenticates under more than one IAM principal."
   type        = list(string)
   default     = []
 }
 
 variable "addon_versions" {
-  description = "See terraform/modules/eks/variables.tf -- pin per-addon versions here once captured to stop foundation plans from drifting on every AWS addon release."
+  description = "See terraform/modules/eks/variables.tf. Pin per-addon versions here once captured to stop foundation plans from drifting on every AWS addon release."
   type        = map(string)
   default     = {}
 }

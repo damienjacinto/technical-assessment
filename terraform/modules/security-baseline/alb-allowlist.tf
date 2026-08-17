@@ -1,4 +1,4 @@
-# Consumed by alb-ip-restrict-sg.tf -- the actual access control for both
+# Consumed by alb-ip-restrict-sg.tf. The actual access control for both
 # ALBs, not WAF. Auto-detected fallback when no explicit CIDRs given
 # (same pattern as terraform/modules/eks/main.tf); set
 # var.alb_allowlist_cidrs explicitly once real office/VPN ranges exist.

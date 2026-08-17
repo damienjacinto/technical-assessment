@@ -1,5 +1,5 @@
 {{/*
-Standard labels -- mirrors the naming/tagging taxonomy used on the AWS
+Standard labels. Mirrors the naming/tagging taxonomy used on the AWS
 side (see docs/ARCHITECTURE.md), so cloud tags and k8s labels are one
 vocabulary, not two.
 */}}

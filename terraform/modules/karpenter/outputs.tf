@@ -4,7 +4,7 @@ output "node_instance_profile_name" {
 }
 
 output "controller_role_arn" {
-  description = "IAM role ARN of the Karpenter controller's IRSA role (not Pod Identity -- see main.tf for why)."
+  description = "IAM role ARN of the Karpenter controller's IRSA role (not Pod Identity. See main.tf for why)."
   value       = aws_iam_role.controller.arn
 }
 

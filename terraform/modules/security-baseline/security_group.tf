@@ -23,7 +23,7 @@ resource "aws_vpc_security_group_egress_rule" "app_to_vpc" {
 
 resource "aws_vpc_security_group_egress_rule" "app_https_out" {
   security_group_id = aws_security_group.app.id
-  description       = "HTTPS -- AWS API calls via the VPC interface endpoints"
+  description       = "HTTPS AWS API calls via the VPC interface endpoints"
   cidr_ipv4         = var.vpc_cidr
   from_port         = 443
   to_port           = 443
