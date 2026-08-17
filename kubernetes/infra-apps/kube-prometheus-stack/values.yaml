@@ -1,5 +1,6 @@
 # Self-hosted, not AWS-managed AMP/AMG (docs/ARCHITECTURE.md trade-off).
 # No EBS CSI driver -- Prometheus uses emptyDir, retention resets on reschedule. Grafana disabled.
+# Alertmanager and default alerting rules disabled for now (temporary).
 kube-prometheus-stack:
   prometheusOperator:
     resources:
@@ -52,19 +53,10 @@ kube-prometheus-stack:
       minAvailable: 1
 
   alertmanager:
-    alertmanagerSpec:
-      replicas: 2
-      nodeSelector: *tools-node-selector
-      tolerations: *tools-tolerations
-      resources:
-        requests:
-          cpu: 50m
-          memory: 64Mi
-        limits:
-          memory: 128Mi
-    podDisruptionBudget:
-      enabled: true
-      minAvailable: 1
+    enabled: false
+
+  defaultRules:
+    create: false
 
   grafana:
     enabled: false
