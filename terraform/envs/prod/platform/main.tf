@@ -115,8 +115,6 @@ module "argocd" {
   git_repo_url         = var.git_repo_url
   git_revision         = var.git_revision
 
-  alb_security_group_id = local.foundation.alb_ip_restricted_sg_id
-
   argo_app_labels = {
     "app.kubernetes.io/part-of"    = "redemption"
     "app.kubernetes.io/managed-by" = "argocd"

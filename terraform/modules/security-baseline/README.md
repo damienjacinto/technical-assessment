@@ -49,7 +49,7 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_alb_ip_restricted_sg_id"></a> [alb\_ip\_restricted\_sg\_id](#output\_alb\_ip\_restricted\_sg\_id) | Security group restricting ALB ingress to the allowlisted IPs at the network layer -- consumed via the alb.ingress.kubernetes.io/security-groups annotation on both the-redemption's Ingress (via a ConfigMap lookup) and ArgoCD's (directly, through terraform/modules/argocd/main.tf). |
+| <a name="output_alb_ip_restricted_sg_id"></a> [alb\_ip\_restricted\_sg\_id](#output\_alb\_ip\_restricted\_sg\_id) | Security group restricting ALB ingress to the allowlisted IPs at the network layer -- consumed via the alb.ingress.kubernetes.io/security-groups annotation on the-redemption's Ingress (via a ConfigMap lookup). ArgoCD has no Ingress; it's reached via kubectl port-forward. |
 | <a name="output_app_security_group_id"></a> [app\_security\_group\_id](#output\_app\_security\_group\_id) | Security group ID for the-redemption's app pods (Security Groups for Pods). |
 | <a name="output_general_kms_key_arn"></a> [general\_kms\_key\_arn](#output\_general\_kms\_key\_arn) | ARN of the general-purpose KMS key (Secrets Manager, EBS). |
 <!-- END_TF_DOCS -->
