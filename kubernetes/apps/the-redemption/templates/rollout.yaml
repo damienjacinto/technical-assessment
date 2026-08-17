@@ -58,10 +58,9 @@ spec:
               app.kubernetes.io/name: the-redemption
       containers:
         - name: the-redemption
+          # No args: the image's own ENTRYPOINT (app/fake-app/Dockerfile)
+          # fully defines the startup command.
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          args:
-            - -listen=:{{ .Values.port }}
-            - -text=OK
           ports:
             - name: http
               containerPort: {{ .Values.port }}
@@ -114,9 +113,9 @@ spec:
         prometheus:
           address: {{ .Values.prometheus.address }}
           query: |
-            sum(rate(http_requests_total{job="{{ "{{args.service-name}}" }}",status=~"5.."}[5m]))
+            sum(rate(http_server_request_duration_seconds_count{job="{{ "{{args.service-name}}" }}",http_response_status_code=~"5.."}[5m]))
             /
-            sum(rate(http_requests_total{job="{{ "{{args.service-name}}" }}"}[5m]))
+            sum(rate(http_server_request_duration_seconds_count{job="{{ "{{args.service-name}}" }}"}[5m]))
     - name: p99-latency-seconds
       interval: 1m
       successCondition: result[0] <= 0.5
@@ -125,4 +124,4 @@ spec:
         prometheus:
           address: {{ .Values.prometheus.address }}
           query: |
-            histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job="{{ "{{args.service-name}}" }}"}[5m])) by (le))
+            histogram_quantile(0.99, sum(rate(http_server_request_duration_seconds_bucket{job="{{ "{{args.service-name}}" }}"}[5m])) by (le))

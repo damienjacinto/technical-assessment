@@ -1,0 +1,9 @@
+# Bump this file (not values.yaml's defaults) after each app/fake-app
+# image you want deployed. .github/workflows/build-fake-app.yml creates
+# the ECR repository itself and pushes a git-SHA tag; neither is
+# Terraform- or git-known ahead of time, so they're set explicitly here
+# instead of baked into values.yaml's local-lint defaults. Applied by
+# kubernetes/argocd-apps/the-redemption.yaml's helm.valueFiles.
+image:
+  repository: "public.ecr.aws/l4z8k7v4/redemption-app"
+  tag: "v1.0.0"

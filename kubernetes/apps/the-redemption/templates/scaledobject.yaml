@@ -22,7 +22,7 @@ spec:
         serverAddress: {{ .Values.prometheus.address }}
         metricName: the-redemption-requests-per-second
         threshold: "50"
-        query: sum(rate(http_requests_total{job="the-redemption"}[1m]))
+        query: sum(rate(http_server_request_duration_seconds_count{job="the-redemption"}[1m]))
     - type: cron
       metadata:
         timezone: UTC

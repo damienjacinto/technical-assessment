@@ -46,6 +46,7 @@ module "eks" {
   public_endpoint_allowed_cidrs   = var.public_endpoint_allowed_cidrs
   additional_admin_principal_arns = var.additional_admin_principal_arns
   addon_versions                  = var.addon_versions
+  cluster_enabled_log_types       = var.cluster_enabled_log_types
   tags                            = merge(local.tags, { Component = "compute-control-plane" })
 }
 

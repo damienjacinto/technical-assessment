@@ -20,6 +20,12 @@ spec:
       # templates/ingress.yaml's lookup() instead.
       valuesObject:
         environment: prod
+      # image.repository/tag: CI-built, not git-known ahead of time, and
+      # bumped independently of every other change here — kept in their
+      # own file instead of valuesObject so bumping them is a one-line
+      # diff. See override.yaml's own comment.
+      valueFiles:
+        - override.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: the-redemption

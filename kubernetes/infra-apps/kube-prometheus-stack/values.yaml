@@ -40,6 +40,7 @@ kube-prometheus-stack:
               app.kubernetes.io/name: prometheus
       additionalScrapeConfigs:
         - job_name: otel-collector
+          honor_labels: true
           kubernetes_sd_configs:
             - role: endpoints
               namespaces:

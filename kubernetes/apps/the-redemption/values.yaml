@@ -4,10 +4,14 @@
 # a Terraform-written ConfigMap instead (see NOTES.md for why they differ).
 
 image:
-  # Placeholder image. Business logic is out of scope; any HTTP server
-  # exposing /healthz works here.
-  repository: hashicorp/http-echo
-  tag: "1.0"
+  # Placeholder image (app/fake-app): no business logic, just a Flask stub
+  # with OTel auto-instrumentation. Not Terraform-managed (no ECR/IAM
+  # resources for it). These are the local helm lint/template fallback
+  # only — the live ArgoCD deployment gets its real repository/tag from
+  # override.yaml (kubernetes/argocd-apps/the-redemption.yaml's
+  # helm.valueFiles), bumped there after each image you want deployed.
+  repository: "public.ecr.aws/l4z8k7v4/redemption-app"
+  tag: "unset"
 
 # Steady-state floor; KEDA governs scaling beyond it (Karpenter holds no
 # floor of its own, docs/ARCHITECTURE.md).

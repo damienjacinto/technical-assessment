@@ -63,3 +63,9 @@ variable "repository" {
   type        = string
   default     = "https://github.com/damienjacinto/technical-assessment"
 }
+
+variable "cluster_enabled_log_types" {
+  description = "EKS cluster enabled log types."
+  type        = list(string)
+  default     = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+}
