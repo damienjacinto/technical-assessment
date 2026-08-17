@@ -84,7 +84,8 @@ module "eks" {
   addons = {
     vpc-cni = {
       before_compute = true
-      most_recent    = true
+      most_recent    = !contains(keys(var.addon_versions), "vpc-cni")
+      addon_version  = try(var.addon_versions["vpc-cni"], null)
       configuration_values = jsonencode({
         env = {
           ENABLE_PREFIX_DELEGATION = "true"
@@ -92,13 +93,16 @@ module "eks" {
       })
     }
     kube-proxy = {
-      most_recent = true
+      most_recent   = !contains(keys(var.addon_versions), "kube-proxy")
+      addon_version = try(var.addon_versions["kube-proxy"], null)
     }
     eks-pod-identity-agent = {
-      most_recent = true
+      most_recent   = !contains(keys(var.addon_versions), "eks-pod-identity-agent")
+      addon_version = try(var.addon_versions["eks-pod-identity-agent"], null)
     }
     metrics-server = {
-      most_recent = true
+      most_recent   = !contains(keys(var.addon_versions), "metrics-server")
+      addon_version = try(var.addon_versions["metrics-server"], null)
     }
   }
 

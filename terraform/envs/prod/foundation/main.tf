@@ -45,6 +45,7 @@ module "eks" {
   private_subnet_ids              = module.vpc.private_subnet_ids
   public_endpoint_allowed_cidrs   = var.public_endpoint_allowed_cidrs
   additional_admin_principal_arns = var.additional_admin_principal_arns
+  addon_versions                  = var.addon_versions
   tags                            = merge(local.tags, { Component = "compute-control-plane" })
 }
 

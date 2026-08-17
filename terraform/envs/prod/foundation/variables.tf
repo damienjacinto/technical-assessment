@@ -46,6 +46,12 @@ variable "additional_admin_principal_arns" {
   default     = []
 }
 
+variable "addon_versions" {
+  description = "See terraform/modules/eks/variables.tf -- pin per-addon versions here once captured to stop foundation plans from drifting on every AWS addon release."
+  type        = map(string)
+  default     = {}
+}
+
 variable "owner" {
   description = "Team tag value."
   type        = string

@@ -20,7 +20,7 @@ cluster_version = "1.35"
 # terraform/modules/eks/main.tf and NOTES.md. Neither is the target
 # design: access should ultimately go through an SSM bastion or private
 # CI runner inside the VPC, not a public CIDR allowlist.
-public_endpoint_allowed_cidrs = ["203.0.113.0/24"]
+public_endpoint_allowed_cidrs = []
 
 # IAM principal ARNs (users/roles) beyond whichever one applies this stack
 # (enable_cluster_creator_admin_permissions already covers that one) that
@@ -29,6 +29,14 @@ public_endpoint_allowed_cidrs = ["203.0.113.0/24"]
 # static IAM user/CI role. Leave empty if only one IAM principal ever
 # needs access.
 additional_admin_principal_arns = []
+
+# Pin EKS addon versions. Leave empty to keep most_recent.
+addon_versions = {
+  vpc-cni                = "v1.23.0-eksbuild.1"
+  kube-proxy             = "v1.35.3-eksbuild.18"
+  eks-pod-identity-agent = "v1.4.0-eksbuild.1"
+  metrics-server         = "v0.9.0-eksbuild.5"
+}
 
 owner      = "sre"
 repository = "https://github.com/damienjacinto/technical-assessment"
