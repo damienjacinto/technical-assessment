@@ -1,11 +1,11 @@
 kyverno:
-  replicaCount: 3
+  replicaCount: 1
   features:
     policyExceptions:
       enabled: true
       namespace: argocd
   admissionController:
-    replicas: 3
+    replicas: 1
     resources:
       requests:
         cpu: 100m
