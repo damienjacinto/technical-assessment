@@ -1,6 +1,5 @@
-# Self-hosted, not AWS-managed AMP/AMG (docs/ARCHITECTURE.md trade-off):
-# more Day-2 toil, in exchange for full control over retention/PromQL.
-# PVC-backed, spread across AZs with its own PDB.
+# Self-hosted, not AWS-managed AMP/AMG (docs/ARCHITECTURE.md trade-off).
+# No EBS CSI driver -- Prometheus uses emptyDir, retention resets on reschedule. Grafana disabled.
 kube-prometheus-stack:
   prometheusOperator:
     resources:
@@ -25,13 +24,6 @@ kube-prometheus-stack:
       retention: 15d
       nodeSelector: *tools-node-selector
       tolerations: *tools-tolerations
-      storageSpec:
-        volumeClaimTemplate:
-          spec:
-            accessModes: ["ReadWriteOnce"]
-            resources:
-              requests:
-                storage: 50Gi
       resources:
         requests:
           cpu: 500m
@@ -75,37 +67,7 @@ kube-prometheus-stack:
       minAvailable: 1
 
   grafana:
-    replicas: 2
-    nodeSelector: *tools-node-selector
-    tolerations: *tools-tolerations
-    resources:
-      requests:
-        cpu: 100m
-        memory: 128Mi
-      limits:
-        memory: 256Mi
-    containerSecurityContext:
-      runAsNonRoot: true
-    sidecar:
-      resources:
-        requests:
-          cpu: 50m
-          memory: 64Mi
-        limits:
-          memory: 128Mi
-      securityContext:
-        runAsNonRoot: true
-    persistence:
-      enabled: true
-      size: 10Gi
-    additionalDataSources:
-      - name: Tempo
-        type: tempo
-        url: http://tempo.observability.svc.cluster.local:3100
-        access: proxy
-    podDisruptionBudget:
-      enabled: true
-      minAvailable: 1
+    enabled: false
 
   kube-state-metrics:
     nodeSelector: *tools-node-selector

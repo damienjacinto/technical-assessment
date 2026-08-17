@@ -65,3 +65,9 @@ variable "tags" {
   description = "Tags applied to all resources created by this module."
   type        = map(string)
 }
+
+variable "addon_versions" {
+  description = "Explicit version to pin per EKS addon (key = addon name: vpc-cni, kube-proxy, eks-pod-identity-agent, metrics-server). An addon left out of this map falls back to most_recent, which re-resolves on every plan and diffs whenever AWS ships a new build -- pin it here once you've captured the currently-applied version to make plans deterministic."
+  type        = map(string)
+  default     = {}
+}
