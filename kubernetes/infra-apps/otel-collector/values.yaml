@@ -4,6 +4,11 @@ opentelemetry-collector:
   mode: deployment
   replicaCount: 2
 
+  # Chart sets no securityContext at all by default -- require-run-as-non-root
+  # checks the container level explicitly.
+  securityContext:
+    runAsNonRoot: true
+
   # Dedicated tooling NodePool -- safe only because mode is "deployment";
   # a DaemonSet restricted to one NodePool would break per-node coverage.
   nodeSelector:
