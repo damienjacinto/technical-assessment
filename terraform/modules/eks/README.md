@@ -28,6 +28,7 @@
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_additional_admin_principal_arns"></a> [additional\_admin\_principal\_arns](#input\_additional\_admin\_principal\_arns) | Extra IAM principal ARNs (users or roles) to grant cluster-admin access via EKS Access Entries | `list(string)` | `[]` | no |
+| <a name="input_addon_versions"></a> [addon\_versions](#input\_addon\_versions) | Explicit version to pin per EKS addon (key = addon name: vpc-cni, kube-proxy, eks-pod-identity-agent, metrics-server). An addon left out of this map falls back to most\_recent, which re-resolves on every plan and diffs whenever AWS ships a new build -- pin it here once you've captured the currently-applied version to make plans deterministic. | `map(string)` | `{}` | no |
 | <a name="input_cluster_enabled_log_types"></a> [cluster\_enabled\_log\_types](#input\_cluster\_enabled\_log\_types) | Control plane log types shipped to CloudWatch Logs. Default is all five EKS supports. | `list(string)` | <pre>[<br/>  "api",<br/>  "audit",<br/>  "authenticator",<br/>  "controllerManager",<br/>  "scheduler"<br/>]</pre> | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | EKS cluster name, e.g. "redemption-prod-eks". | `string` | n/a | yes |
 | <a name="input_cluster_version"></a> [cluster\_version](#input\_cluster\_version) | Kubernetes version for the control plane. Versioning policy: latest-minus-one, not bleeding edge -- see docs/ARCHITECTURE.md. | `string` | `"1.35"` | no |
