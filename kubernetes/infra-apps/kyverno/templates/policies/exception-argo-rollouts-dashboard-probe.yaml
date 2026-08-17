@@ -1,0 +1,25 @@
+# argo-rollouts chart only exposes livenessProbe/readinessProbe values for
+# the controller, not the dashboard -- require-probes can never be
+# satisfied via values.yaml, same situation as the other sidecar/chart-gap
+# exceptions in this directory.
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: argo-rollouts-dashboard-probe-exception
+  namespace: argocd
+spec:
+  exceptions:
+    - policyName: require-probes
+      ruleNames:
+        - require-readiness-and-liveness-probes
+        - autogen-require-readiness-and-liveness-probes
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - Deployment
+          namespaces:
+            - argo-rollouts
+          names:
+            - "argo-rollouts-dashboard*"
