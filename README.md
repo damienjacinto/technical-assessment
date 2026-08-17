@@ -8,6 +8,9 @@ built for a 3-person SRE team.
 
 ```
 technical-assessment/
+├── app/fake-app/                the-redemption's placeholder image: Flask + OTel
+│                                auto-instrumentation, no business logic. Not
+│                                Terraform-managed — see .github/workflows/build-fake-app.yml
 ├── docs/                       Architecture writeup, team plan
 ├── scripts/                    validate-kubernetes.sh, lint-iam-actions.py (pre-commit/CI)
 ├── terraform/
