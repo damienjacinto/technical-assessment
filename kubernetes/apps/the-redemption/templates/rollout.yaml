@@ -44,6 +44,9 @@ spec:
         {{- include "the-redemption.labels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "the-redemption.fullname" . }}
+      # Default 30s; nothing to gracefully drain, so scale-down doesn't
+      # wait on pods that have no in-flight work to finish.
+      terminationGracePeriodSeconds: 5
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
