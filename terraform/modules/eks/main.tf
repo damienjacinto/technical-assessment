@@ -100,19 +100,6 @@ module "eks" {
       most_recent   = !contains(keys(var.addon_versions), "eks-pod-identity-agent")
       addon_version = try(var.addon_versions["eks-pod-identity-agent"], null)
     }
-    metrics-server = {
-      most_recent   = !contains(keys(var.addon_versions), "metrics-server")
-      addon_version = try(var.addon_versions["metrics-server"], null)
-      configuration_values = jsonencode({
-        replicas = 1
-        nodeSelector = {
-          "karpenter.sh/nodepool" = "tools"
-        }
-        tolerations = [
-          { key = "dedicated", operator = "Equal", value = "tools", effect = "NoSchedule" },
-        ]
-      })
-    }
   }
 
   tags = var.tags

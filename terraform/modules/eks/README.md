@@ -43,6 +43,7 @@
 
 | Name | Description |
 |------|-------------|
+| <a name="output_addon_versions"></a> [addon\_versions](#output\_addon\_versions) | Resolved version per EKS addon (key = addon name): actual installed version for addons in this module's `addons` block, passed through as-is from var.addon\_versions for any other pinned key (e.g. metrics-server, installed from platform). Capture into addon\_versions to pin, once stable, to make plans deterministic. |
 | <a name="output_cluster_certificate_authority_data"></a> [cluster\_certificate\_authority\_data](#output\_cluster\_certificate\_authority\_data) | Base64-encoded certificate authority data for the EKS cluster. |
 | <a name="output_cluster_endpoint"></a> [cluster\_endpoint](#output\_cluster\_endpoint) | API server endpoint of the EKS cluster. |
 | <a name="output_cluster_iam_role_arn"></a> [cluster\_iam\_role\_arn](#output\_cluster\_iam\_role\_arn) | IAM role ARN assumed by the EKS control plane. |

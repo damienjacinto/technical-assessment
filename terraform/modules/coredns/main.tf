@@ -13,6 +13,8 @@ resource "aws_eks_addon" "coredns" {
   addon_name    = "coredns"
   addon_version = data.aws_eks_addon_version.coredns.version
   tags          = var.tags
+
+  depends_on = [kubectl_manifest.security_group_policy]
 }
 
 resource "aws_security_group" "this" {

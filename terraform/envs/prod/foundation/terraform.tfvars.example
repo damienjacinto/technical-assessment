@@ -40,3 +40,6 @@ addon_versions = {
 
 owner      = "sre"
 repository = "https://github.com/damienjacinto/technical-assessment"
+
+# Optional: filter eks logging to only certain log types. Leave empty to enable all.
+# cluster_enabled_log_types = []

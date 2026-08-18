@@ -60,6 +60,17 @@ module "karpenter" {
   depends_on                = [module.coredns]
 }
 
+module "metrics_server" {
+  source = "../../../modules/metrics-server"
+
+  cluster_name    = local.foundation.cluster_name
+  cluster_version = local.foundation.cluster_version
+  addon_version   = try(local.foundation.addon_versions["metrics-server"], null)
+  tags            = merge(local.foundation.tags, { Component = "compute-autoscaling" })
+
+  depends_on = [module.karpenter]
+}
+
 module "alb_controller" {
   source = "../../../modules/alb-controller"
 

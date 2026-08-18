@@ -3,15 +3,15 @@ output "karpenter_interruption_queue_name" {
   value       = module.karpenter.interruption_queue_name
 }
 
+output "metrics_server_addon_version" {
+  description = "Resolved metrics-server addon version currently installed. Capture into foundation's addon_versions (key \"metrics-server\") once stable, to pin it and make plans deterministic."
+  value       = module.metrics_server.addon_version
+}
+
 output "alb_controller_role_arn" {
   description = "IAM role ARN of the AWS Load Balancer Controller's Pod Identity."
   value       = module.alb_controller.role_arn
 }
-
-# output "argocd_namespace" {
-#   description = "Kubernetes namespace ArgoCD is installed into."
-#   value       = module.argocd.argocd_namespace
-# }
 
 output "external_secrets_role_arn" {
   description = "Not consumed by any manifest. Pod Identity's role<->ServiceAccount pairing happens entirely on the AWS side. Exposed for visibility only."

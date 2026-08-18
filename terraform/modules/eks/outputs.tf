@@ -54,3 +54,8 @@ output "oidc_provider" {
   description = "Cluster OIDC issuer, without the https:// prefix. The condition-key prefix (\"<this>:sub\", \"<this>:aud\") an IRSA trust policy's StringEquals conditions need."
   value       = module.eks.oidc_provider
 }
+
+output "addon_versions" {
+  description = "Resolved version per EKS addon (key = addon name): actual installed version for addons in this module's `addons` block, passed through as-is from var.addon_versions for any other pinned key (e.g. metrics-server, installed from platform). Capture into addon_versions to pin, once stable, to make plans deterministic."
+  value       = merge(var.addon_versions, { for name, addon in module.eks.cluster_addons : name => addon.addon_version })
+}

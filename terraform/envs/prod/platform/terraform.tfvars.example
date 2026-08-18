@@ -1,5 +1,0 @@
-# Copy to terraform.tfvars and fill in real values before `terraform apply`.
-# Requires envs/prod/foundation to already be applied.
-
-git_repo_url = "https://github.com/damienjacinto/technical-assessment.git"
-git_revision = "main"

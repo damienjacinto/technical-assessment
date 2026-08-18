@@ -20,37 +20,6 @@ resource "helm_release" "argocd" {
         params = {
           "server.insecure" = false
         }
-        # Local admin login (chart default) is the only auth, access
-        # control is the IP allowlist security group below, not identity.
-        cm = {
-          # Keeps high-volume, not-user-managed resources out of the UI
-          "resource.exclusions" = yamlencode([
-            {
-              apiGroups = ["apiextensions.k8s.io"]
-              kinds     = ["CustomResourceDefinition"]
-              clusters  = ["*"]
-            },
-            {
-              apiGroups = ["wgpolicyk8s.io"]
-              kinds     = ["PolicyReport", "ClusterPolicyReport"]
-              clusters  = ["*"]
-            },
-            {
-              apiGroups = ["kyverno.io"]
-              kinds = [
-                "AdmissionReport", "ClusterAdmissionReport",
-                "BackgroundScanReport", "ClusterBackgroundScanReport",
-                "UpdateRequest"
-              ]
-              clusters = ["*"]
-            },
-            {
-              apiGroups = ["", "discovery.k8s.io", "coordination.k8s.io"]
-              kinds     = ["Endpoints", "EndpointSlice", "Event", "Lease"]
-              clusters  = ["*"]
-            }
-          ])
-        }
       }
       # No ingress, access is via kubectl port-forward, not exposed
       # through the ALB.

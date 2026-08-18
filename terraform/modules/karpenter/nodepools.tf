@@ -32,7 +32,7 @@ resource "kubectl_manifest" "ec2nodeclass" {
     }
   })
 
-  depends_on = [helm_release.karpenter]
+  depends_on = [helm_release.karpenter, helm_release.karpenter_crd]
 }
 
 # Dedicated tooling pool, kept off the app's own capacity via a taint.
