@@ -89,12 +89,16 @@ spec:
               value: {{ .Values.environment | quote }}
             - name: OTEL_SEMCONV_STABILITY_OPT_IN
               value: "http"
+            # Default is 60s; KEDA's query window (scaledobject.yaml) is
+            # tuned to this, not the other way around.
+            - name: OTEL_METRIC_EXPORT_INTERVAL
+              value: "15000"
           readinessProbe:
             httpGet:
               path: /healthz
               port: http
-            initialDelaySeconds: 5
-            periodSeconds: 5
+            initialDelaySeconds: 2
+            periodSeconds: 2
           livenessProbe:
             httpGet:
               path: /healthz

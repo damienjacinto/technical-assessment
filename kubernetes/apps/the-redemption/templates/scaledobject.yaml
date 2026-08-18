@@ -19,6 +19,18 @@ spec:
   minReplicaCount: {{ .Values.replicaCount }}
   maxReplicaCount: {{ .Values.autoscaling.maxReplicaCount }}
   cooldownPeriod: 60
+  # Default 30s; matches the 15s metric export interval below so KEDA
+  # never polls Prometheus faster than the data actually refreshes.
+  pollingInterval: 15
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleUp:
+          stabilizationWindowSeconds: 0
+          policies:
+            - type: Percent
+              value: 300
+              periodSeconds: 15
   triggers:
     - type: prometheus
       metricType: Value
@@ -26,7 +38,9 @@ spec:
         serverAddress: {{ .Values.prometheus.address }}
         metricName: {{ include "the-redemption.fullname" . }}-requests-per-second
         threshold: "50"
-        query: sum(rate(http_server_request_duration_seconds_count{job="{{ include "the-redemption.fullname" . }}"}[1m]))
+        # 30s, not 1m: needs 2+ samples inside the window, so this only
+        # works because OTEL_METRIC_EXPORT_INTERVAL (rollout.yaml) is 15s.
+        query: sum(rate(http_server_request_duration_seconds_count{job="{{ include "the-redemption.fullname" . }}"}[30s]))
     - type: cron
       metadata:
         timezone: UTC
