@@ -50,22 +50,3 @@ variable "flow_log_retention_days" {
   type        = number
   default     = 90
 }
-
-variable "nat_gateway_mode" {
-  description = <<-EOT
-    "per_az" (implemented): one NAT Gateway per AZ, the long-established HA pattern.
-    "regional": documented design intent (see NOTES.md) using Amazon VPC Regional NAT
-    Gateway -- NOT yet wired into this module's HCL, since its exact Terraform resource
-    schema needs verifying against a current `hashicorp/aws` provider release before it's
-    safe to ship in a revenue-critical stack. Setting this to "regional" today has no
-    effect; per-AZ is used regardless, until that verification happens and the module is
-    updated.
-  EOT
-  type        = string
-  default     = "per_az"
-
-  validation {
-    condition     = contains(["per_az", "regional"], var.nat_gateway_mode)
-    error_message = "nat_gateway_mode must be \"per_az\" or \"regional\"."
-  }
-}

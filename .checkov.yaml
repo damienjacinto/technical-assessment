@@ -1,8 +1,8 @@
-# Checkov config. Every skip is a documented decision -- see
+# Checkov config. Every skip is a documented decision, see
 # docs/ARCHITECTURE.md for details. Run `checkov -d terraform` without
 # this file for the full raw findings.
 #
-# framework: [terraform] is required alongside directory: -- a CLI -d
+# framework: [terraform] is required alongside directory: a CLI -d
 # (used by the pre-commit hook) overrides directory:, so framework: is
 # what actually keeps checkov off vendored kubernetes/infra-apps/*/charts/.
 framework:
@@ -12,13 +12,13 @@ directory:
 
 skip-check:
   # Karpenter/ALB Controller IAM policies need Resource: "*" for scoped-by-tag
-  # actions -- matches AWS's own published policies for these controllers.
+  # actions, matches AWS's own published policies for these controllers.
   - CKV_AWS_356 # IAM policy allows "*" as resource for restrictable actions
   - CKV_AWS_111 # IAM policy allows write access without constraints
   - CKV_AWS_108 # IAM policy allows data exfiltration
 
   # Registry modules (terraform-aws-modules/*) are pinned via semver, the
-  # idiomatic method for Registry sources -- commit-hash pinning is for
+  # idiomatic method for Registry sources, commit-hash pinning is for
   # git-source modules.
   - CKV_TF_1 # Terraform module sources should use a commit hash
 
@@ -29,10 +29,10 @@ skip-check:
   - CKV2_AWS_5 # Security group not attached to another resource
 
   # AWS's implicit default KMS key policy (full access for account
-  # root/IAM) is secure by default -- bespoke policies aren't worth it here.
+  # root/IAM) is secure by default, bespoke policies aren't worth it here.
   - CKV2_AWS_64 # KMS key policy should be defined
 
-  # State/flow-logs buckets ARE the audit artifacts -- logging/replication/
+  # State/flow-logs buckets ARE the audit artifacts, logging/replication/
   # notifications on them is low-value, and replication conflicts with
   # this project's single-region design (docs/ARCHITECTURE.md).
   - CKV_AWS_18  # S3 bucket should have access logging enabled
@@ -40,6 +40,6 @@ skip-check:
   - CKV2_AWS_62 # S3 bucket should have event notifications enabled
 
   # Fargate pod log group is operational/debugging logs, not an audit
-  # trail -- 30 days is a deliberate right-size. Global because inline
+  # trail; 30 days is a deliberate right-size. Global because inline
   # #checkov:skip is silently ignored for this check in checkov 3.3.8.
   - CKV_AWS_338 # CloudWatch log group should retain logs for at least 1 year

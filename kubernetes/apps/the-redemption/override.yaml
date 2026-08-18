@@ -1,0 +1,20 @@
+# Bump this file (not values.yaml's defaults) after each app/fake-app
+# image you want deployed. .github/workflows/build-fake-app.yml creates
+# the ECR repository itself and pushes a git-SHA tag; neither is
+# Terraform- or git-known ahead of time, so they're set explicitly here
+# instead of baked into values.yaml's local-lint defaults. Applied by
+# kubernetes/argocd-apps/the-redemption.yaml's helm.valueFiles.
+image:
+  repository: "public.ecr.aws/l4z8k7v4/redemption-app"
+  tag: "v1.0.2"
+  # for testing, we want to always pull the latest image (not rely on a cached one)
+  pullPolicy: Always
+
+autoscaling:
+  maxReplicaCount: 20
+  # KEDA cron pre-warm for *known* sales (docs/ARCHITECTURE.md); example
+  # is a placeholder, sync with karpenter/main.tf's blackout windows.
+  flashSale:
+    cronStart: "0 12 * * 5"
+    cronEnd: "0 14 * * 5"
+    desiredReplicas: 20

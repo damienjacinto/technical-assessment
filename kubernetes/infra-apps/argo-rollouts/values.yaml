@@ -1,12 +1,15 @@
 argo-rollouts:
+  # Chart only sets runAsNonRoot at the pod level by default. Require-run-as-non-root
+  # checks the container level, so it's spelled out here too.
+  containerSecurityContext:
+    runAsNonRoot: true
   controller:
-    replicas: 2
+    replicas: 1
     resources:
       requests:
         cpu: 100m
         memory: 128Mi
       limits:
-        cpu: 500m
         memory: 512Mi
     nodeSelector:
       karpenter.sh/nodepool: tools
@@ -17,6 +20,14 @@ argo-rollouts:
         effect: NoSchedule
   dashboard:
     enabled: true
+    containerSecurityContext:
+      runAsNonRoot: true
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        memory: 128Mi
     nodeSelector:
       karpenter.sh/nodepool: tools
     tolerations:

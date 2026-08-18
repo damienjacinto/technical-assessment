@@ -2,6 +2,10 @@ apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
   name: require-run-as-non-root
+  annotations:
+    # Job/CronJob excluded: short-lived Helm hook containers (e.g. chart
+    # admission-webhook cert-gen jobs) run as whatever their vendor image needs.
+    pod-policies.kyverno.io/autogen-controllers: DaemonSet,Deployment,StatefulSet
 spec:
   validationFailureAction: Enforce
   background: true
@@ -11,6 +15,15 @@ spec:
         any:
           - resources:
               kinds: [Pod]
+      exclude:
+        any:
+          - resources:
+              namespaces: [kube-system]
+      preconditions:
+        all:
+          - key: "{{`{{ request.object.metadata.ownerReferences[0].kind || '' }}`}}"
+            operator: NotEquals
+            value: "Job"
       validate:
         message: "Containers must not run as root (runAsNonRoot: true required)."
         pattern:

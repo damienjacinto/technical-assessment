@@ -1,31 +1,36 @@
 # KEDA takes the max of two triggers: Prometheus request-rate (CPU/memory
 # lags a step-change), and cron pre-warming ahead of a *known* flash sale
 # so pods/nodes exist before the 10x step hits (docs/ARCHITECTURE.md).
+# autoscaling.* only lives in override.yaml (the real deployment's
+# values), not values.yaml's local-lint defaults - skip rendering rather
+# than crash `helm lint`/`helm template` when it's unset.
+{{- if .Values.autoscaling }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: the-redemption
-  namespace: the-redemption
+  name: {{ include "the-redemption.fullname" . }}
   labels:
     {{- include "the-redemption.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: argoproj.io/v1alpha1
     kind: Rollout
-    name: the-redemption
+    name: {{ include "the-redemption.fullname" . }}
   minReplicaCount: {{ .Values.replicaCount }}
   maxReplicaCount: {{ .Values.autoscaling.maxReplicaCount }}
-  cooldownPeriod: 120
+  cooldownPeriod: 60
   triggers:
     - type: prometheus
+      metricType: Value
       metadata:
         serverAddress: {{ .Values.prometheus.address }}
-        metricName: the-redemption-requests-per-second
+        metricName: {{ include "the-redemption.fullname" . }}-requests-per-second
         threshold: "50"
-        query: sum(rate(http_requests_total{job="the-redemption"}[1m]))
+        query: sum(rate(http_server_request_duration_seconds_count{job="{{ include "the-redemption.fullname" . }}"}[1m]))
     - type: cron
       metadata:
         timezone: UTC
         start: {{ .Values.autoscaling.flashSale.cronStart | quote }}
         end: {{ .Values.autoscaling.flashSale.cronEnd | quote }}
         desiredReplicas: {{ .Values.autoscaling.flashSale.desiredReplicas | quote }}
+{{- end }}

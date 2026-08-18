@@ -8,7 +8,10 @@ built for a 3-person SRE team.
 
 ```
 technical-assessment/
-├── docs/                       Architecture writeup, runbook, team plan
+├── app/fake-app/                the-redemption's placeholder image: Flask + OTel
+│                                auto-instrumentation, no business logic. Not
+│                                Terraform-managed — see .github/workflows/build-fake-app.yml
+├── docs/                       Architecture writeup, team plan
 ├── scripts/                    validate-kubernetes.sh, lint-iam-actions.py (pre-commit/CI)
 ├── terraform/
 │   ├── bootstrap/              State backend (S3, native locking) — apply once, by itself
@@ -82,7 +85,32 @@ future `terraform/envs/staging/` would reuse those same modules as-is, just with
    terraform apply
    ```
 
+## Local dev
+
+**fake-app** — the placeholder Flask service, runs standalone, no cluster needed:
+```
+cd app/fake-app
+docker build -t fake-app --build-arg VERSION=dev .
+docker run -p 8080:8080 fake-app
+curl localhost:8080/healthz
+```
+
+**Pre-commit checks** — Terraform fmt/validate/tflint/checkov/docs, Helm lint +
+kubeconform, IAM policy formatting. Same checks `.github/workflows/ci.yml` runs, so a
+local pass means CI passes too:
+```
+pip install pre-commit
+pre-commit install          # optional: run automatically on every commit
+pre-commit run --all-files
+```
+
+Individual checks also run standalone, without pre-commit:
+- `scripts/validate-kubernetes.sh` — Helm lint/template + kubeconform for every chart
+  under `kubernetes/`
+- `scripts/lint-iam-actions.py` — IAM policy action ordering in `terraform/`
+
+# Links
+
 Full design writeup, with diagrams and the reasoning behind every decision, is in
-**[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)**. Incident procedures are in
-**[`docs/RUNBOOK.md`](docs/RUNBOOK.md)**. Team/task breakdown is in
+**[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)**. Team/task breakdown is in
 **[`docs/TEAM-PLAN.md`](docs/TEAM-PLAN.md)**.

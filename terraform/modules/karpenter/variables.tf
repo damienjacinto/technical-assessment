@@ -19,22 +19,22 @@ variable "vpc_id" {
 }
 
 variable "vpc_cidr" {
-  description = "For the controller's Security-Groups-for-Pods rules -- see aws_security_group.controller."
+  description = "For the controller's Security-Groups-for-Pods rules. See aws_security_group.controller."
   type        = string
 }
 
 variable "cluster_security_group_id" {
-  description = "EKS cluster security group ID. A SecurityGroupPolicy's custom security group replaces the cluster security group Fargate normally attaches by default, not adds to it -- without this included alongside the custom SG, Fargate pod provisioning times out repeatedly (AWS-documented behavior, not an edge case)."
+  description = "EKS cluster security group ID. A SecurityGroupPolicy's custom security group replaces the cluster security group Fargate normally attaches by default, not adds to it. Without this included alongside the custom SG, Fargate pod provisioning times out repeatedly (AWS-documented behavior, not an edge case)."
   type        = string
 }
 
 variable "oidc_provider_arn" {
-  description = "ARN of the cluster's OIDC identity provider -- the controller's IRSA trust policy Federated principal. Pod Identity doesn't work on Fargate (see this module's own main.tf), so the controller -- the one Fargate-hosted, AWS-API-consuming component in this stack -- uses IRSA instead."
+  description = "ARN of the cluster's OIDC identity provider. The controller's IRSA trust policy Federated principal. Pod Identity doesn't work on Fargate (see this module's own main.tf), so the controller. The one Fargate-hosted, AWS-API-consuming component in this stack. Uses IRSA instead."
   type        = string
 }
 
 variable "oidc_provider" {
-  description = "Cluster OIDC issuer without the https:// prefix -- the controller's IRSA trust policy condition-key prefix."
+  description = "Cluster OIDC issuer without the https:// prefix. The controller's IRSA trust policy condition-key prefix."
   type        = string
 }
 

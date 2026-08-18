@@ -28,7 +28,7 @@ No requirements.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_aws_region"></a> [aws\_region](#input\_aws\_region) | AWS region, passed to the Helm chart's `region` value. | `string` | n/a | yes |
-| <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | aws-load-balancer-controller Helm chart version to install. main.tf's IAM policy is reconciled against this exact version's app release -- re-verify that reconciliation whenever this changes. | `string` | `"3.5.0"` | no |
+| <a name="input_chart_version"></a> [chart\_version](#input\_chart\_version) | aws-load-balancer-controller Helm chart version to install. main.tf's IAM policy is reconciled against this exact version's app release. Re-verify that reconciliation whenever this changes. | `string` | `"3.5.0"` | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | EKS cluster the controller manages Ingresses/Services for. | `string` | n/a | yes |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix used to name resources created by this module. | `string` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags applied to all resources created by this module, and to ALBs/target groups the controller provisions at runtime. | `map(string)` | n/a | yes |

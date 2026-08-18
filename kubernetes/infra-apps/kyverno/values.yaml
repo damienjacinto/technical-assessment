@@ -1,7 +1,11 @@
 kyverno:
-  replicaCount: 3
+  replicaCount: 1
+  features:
+    policyExceptions:
+      enabled: true
+      namespace: argocd
   admissionController:
-    replicas: 3
+    replicas: 1
     resources:
       requests:
         cpu: 100m
@@ -16,11 +20,29 @@ kyverno:
         value: tools
         effect: NoSchedule
   backgroundController:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        memory: 256Mi
     nodeSelector: *tools-node-selector
     tolerations: *tools-tolerations
   cleanupController:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        memory: 128Mi
     nodeSelector: *tools-node-selector
     tolerations: *tools-tolerations
   reportsController:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        memory: 512Mi
     nodeSelector: *tools-node-selector
     tolerations: *tools-tolerations

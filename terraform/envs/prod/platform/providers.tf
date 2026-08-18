@@ -1,5 +1,5 @@
 # Stage 2 of 2: configures kubernetes/helm/kubectl against foundation's
-# cluster -- why they're separate states, since Terraform can't configure
+# cluster. Why they're separate states, since Terraform can't configure
 # a provider against a resource from the same plan.
 
 terraform {

@@ -1,0 +1,35 @@
+# prometheus-operator generates this StatefulSet itself, not via our chart
+# values: its config-reloader sidecar has no probe fields and no resources
+# set at all (same situation as the grafana sidecar), and the main
+# container only gets a pod-level securityContext, never the per-container
+# one require-run-as-non-root checks. None of this is fixable through
+# values.yaml.
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: prometheus-statefulset-exception
+  namespace: argocd
+spec:
+  exceptions:
+    - policyName: require-probes
+      ruleNames:
+        - require-readiness-and-liveness-probes
+        - autogen-require-readiness-and-liveness-probes
+    - policyName: require-run-as-non-root
+      ruleNames:
+        - run-as-non-root
+        - autogen-run-as-non-root
+    - policyName: require-resource-requests-limits
+      ruleNames:
+        - require-requests-and-limits
+        - autogen-require-requests-and-limits
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+            - StatefulSet
+          namespaces:
+            - observability
+          names:
+            - "prometheus-kube-prometheus-stack-prometheus*"

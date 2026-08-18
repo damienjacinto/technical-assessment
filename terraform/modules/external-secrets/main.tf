@@ -1,6 +1,6 @@
 # external-secrets: Pod Identity role + least-privilege Secrets Manager
 # policy. The controller is an ArgoCD-managed infra-app, not deployed
-# here -- this is just the AWS-side wiring it needs.
+# here. This is just the AWS-side wiring it needs.
 
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}

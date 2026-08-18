@@ -19,7 +19,7 @@ variable "account_id" {
 }
 
 variable "private_subnet_ids" {
-  description = "Private subnet IDs -- Fargate profiles cannot use public subnets."
+  description = "Private subnet IDs. Fargate profiles cannot use public subnets."
   type        = list(string)
 }
 

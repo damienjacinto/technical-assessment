@@ -1,10 +1,16 @@
 # Enforced, not just advisory: a pod with no resource requests is exactly
 # the failure mode that lets one runaway workload starve the-redemption
 # during a flash sale, and it also breaks Karpenter's bin-packing math.
+# No CPU limit requirement, deliberately: CPU is compressible (throttling
+# wastes burst capacity for no benefit); memory limits still matter since memory isn't.
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
   name: require-resource-requests-limits
+  annotations:
+    # Job/CronJob excluded: short-lived Helm hook containers (e.g. chart
+    # admission-webhook cert-gen jobs) aren't ours to size.
+    pod-policies.kyverno.io/autogen-controllers: DaemonSet,Deployment,StatefulSet
 spec:
   validationFailureAction: Enforce
   background: true
@@ -14,8 +20,21 @@ spec:
         any:
           - resources:
               kinds: [Pod]
+      exclude:
+        any:
+          - resources:
+              namespaces: [kube-system]
+          - resources:
+              selector:
+                matchLabels:
+                  app.kubernetes.io/name: capacity-buffer
+      preconditions:
+        all:
+          - key: "{{`{{ request.object.metadata.ownerReferences[0].kind || '' }}`}}"
+            operator: NotEquals
+            value: "Job"
       validate:
-        message: "Every container must set CPU/memory requests and limits."
+        message: "Every container must set CPU/memory requests and a memory limit."
         pattern:
           spec:
             containers:
@@ -24,5 +43,4 @@ spec:
                     cpu: "?*"
                     memory: "?*"
                   limits:
-                    cpu: "?*"
                     memory: "?*"

@@ -1,11 +1,10 @@
-# Default-deny + explicit allows, not the other way around -- least
+# Default-deny + explicit allows, not the other way around. Least
 # privilege applied at the network layer, underneath the security group
 # backstop from terraform/modules/security-baseline.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: the-redemption-default-deny
-  namespace: the-redemption
+  name: {{ include "the-redemption.fullname" . }}-default-deny
   labels:
     {{- include "the-redemption.labels" . | nindent 4 }}
 spec:
@@ -15,18 +14,17 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: the-redemption-allow
-  namespace: the-redemption
+  name: {{ include "the-redemption.fullname" . }}-allow
   labels:
     {{- include "the-redemption.labels" . | nindent 4 }}
 spec:
   podSelector:
     matchLabels:
-      app.kubernetes.io/name: the-redemption
+      {{- include "the-redemption.selectorLabels" . | nindent 6 }}
   policyTypes: [Ingress, Egress]
   ingress:
     # ALB (target-type ip) sends traffic from its own ENIs in-VPC, not from
-    # a cluster-internal pod -- so this is a CIDR match, not a
+    # a cluster-internal pod, so this is a CIDR match, not a
     # namespaceSelector/podSelector.
     - from:
         - ipBlock:
@@ -54,7 +52,7 @@ spec:
         - protocol: TCP
           port: 4317
     # AWS API calls via VPC interface endpoints, and the future database
-    # tier. Not this pod's own credentials -- Pod Identity vends those
+    # tier. Not this pod's own credentials. Pod Identity vends those
     # node-locally, bypassing this egress path.
     - to:
         - ipBlock:

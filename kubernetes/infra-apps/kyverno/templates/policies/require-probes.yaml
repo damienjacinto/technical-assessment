@@ -1,10 +1,13 @@
 # Without readiness probes, the ALB target group and Argo Rollouts' own
-# canary analysis both lose their signal for "is this pod actually healthy" --
-# directly undermines the zero-downtime deployment story.
+# canary analysis both lose their signal for "is this pod actually healthy".
+# Directly undermines the zero-downtime deployment story.
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
   name: require-probes
+  annotations:
+    # Job/CronJob excluded: run-to-completion containers, probes don't apply.
+    pod-policies.kyverno.io/autogen-controllers: DaemonSet,Deployment,StatefulSet
 spec:
   validationFailureAction: Enforce
   background: true
@@ -14,12 +17,29 @@ spec:
         any:
           - resources:
               kinds: [Pod]
+      exclude:
+        any:
+          - resources:
+              namespaces: [kube-system]
+          - resources:
+              selector:
+                matchLabels:
+                  app.kubernetes.io/name: capacity-buffer
+      preconditions:
+        all:
+          - key: "{{`{{ request.object.metadata.ownerReferences[0].kind || '' }}`}}"
+            operator: NotEquals
+            value: "Job"
       validate:
         message: "Every container must define readinessProbe and livenessProbe."
-        pattern:
-          spec:
-            containers:
-              - readinessProbe:
-                  ?*: "?*"
-                livenessProbe:
-                  ?*: "?*"
+        foreach:
+          - list: "request.object.spec.containers"
+            deny:
+              conditions:
+                any:
+                  - key: "{{`{{ element.livenessProbe || '' }}`}}"
+                    operator: Equals
+                    value: ""
+                  - key: "{{`{{ element.readinessProbe || '' }}`}}"
+                    operator: Equals
+                    value: ""

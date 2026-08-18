@@ -9,7 +9,7 @@ variable "vpc_id" {
 }
 
 variable "vpc_cidr" {
-  description = "VPC CIDR block -- the app security group's ingress/egress rules are scoped to this range."
+  description = "VPC CIDR block. The app security group's ingress/egress rules are scoped to this range."
   type        = string
 }
 
@@ -20,7 +20,7 @@ variable "app_port" {
 }
 
 variable "alb_allowlist_cidrs" {
-  description = "CIDR allowlist for both ALBs' security group (aws_security_group.alb_ip_restricted) -- the only IPs allowed to reach the-redemption or ArgoCD at all. Empty list auto-detects the operator's current public IP via AWS's checkip endpoint at apply time -- see alb-allowlist.tf's data.http.my_ip comment."
+  description = "CIDR allowlist for both ALBs' security group (aws_security_group.alb_ip_restricted). The only IPs allowed to reach the-redemption or ArgoCD at all. Empty list auto-detects the operator's current public IP via AWS's checkip endpoint at apply time. See alb-allowlist.tf's data.http.my_ip comment."
   type        = list(string)
   default     = []
 }

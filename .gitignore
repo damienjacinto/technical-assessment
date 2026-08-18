@@ -44,10 +44,13 @@ terraform.rc
 # planout
 
 # Helm chart dependencies fetched by `helm dependency update` (the
-# kubernetes/infra-apps/*/Chart.yaml wrapper charts) -- ArgoCD/Helm
+# kubernetes/infra-apps/*/Chart.yaml wrapper charts) ArgoCD/Helm
 # re-resolves these from the pinned repository+version at sync time.
 **/charts/
 Chart.lock
 
 # Terraform lock files for remote backends
 .terraform.lock.hcl
+
+# local script
+.local/

@@ -9,7 +9,7 @@ variable "cluster_name" {
 }
 
 variable "cluster_version" {
-  description = "EKS Kubernetes version -- selects which CoreDNS addon versions are compatible."
+  description = "EKS Kubernetes version. Selects which CoreDNS addon versions are compatible."
   type        = string
 }
 
@@ -19,12 +19,12 @@ variable "vpc_id" {
 }
 
 variable "vpc_cidr" {
-  description = "VPC CIDR block -- the CoreDNS security group's ingress/egress rules are scoped to this range."
+  description = "VPC CIDR block. The CoreDNS security group's ingress/egress rules are scoped to this range."
   type        = string
 }
 
 variable "cluster_security_group_id" {
-  description = "EKS cluster security group ID. A SecurityGroupPolicy's custom security group replaces the cluster security group Fargate normally attaches by default, not adds to it -- without this included alongside the custom SG, Fargate pod provisioning times out repeatedly (AWS-documented behavior, not an edge case)."
+  description = "EKS cluster security group ID. A SecurityGroupPolicy's custom security group replaces the cluster security group Fargate normally attaches by default, not adds to it. Without this included alongside the custom SG, Fargate pod provisioning times out repeatedly (AWS-documented behavior, not an edge case)."
   type        = string
 }
 

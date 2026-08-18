@@ -9,7 +9,7 @@ variable "cluster_name" {
 }
 
 variable "cluster_version" {
-  description = "Kubernetes version for the control plane. Versioning policy: latest-minus-one, not bleeding edge -- see docs/ARCHITECTURE.md."
+  description = "Kubernetes version for the control plane. Versioning policy: latest-minus-one, not bleeding edge. See docs/ARCHITECTURE.md."
   type        = string
   default     = "1.35"
 }
@@ -31,7 +31,7 @@ variable "public_endpoint_enabled" {
 }
 
 variable "public_endpoint_allowed_cidrs" {
-  description = "CIDRs allowed to reach the public API endpoint -- real, internet-routable ranges only (office/VPN/CI runner), never 0.0.0.0/0."
+  description = "CIDRs allowed to reach the public API endpoint. Real, internet-routable ranges only (office/VPN/CI runner), never 0.0.0.0/0."
   type        = list(string)
   default     = []
 
@@ -45,7 +45,7 @@ variable "public_endpoint_allowed_cidrs" {
       for cidr in var.public_endpoint_allowed_cidrs :
       !can(regex("^(10\\.|172\\.(1[6-9]|2[0-9]|3[0-1])\\.|192\\.168\\.)", cidr))
     ])
-    error_message = "public_endpoint_allowed_cidrs must be real, internet-routable CIDRs -- EKS rejects RFC1918 private ranges (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) in this field."
+    error_message = "public_endpoint_allowed_cidrs must be real, internet-routable CIDRs. EKS rejects RFC1918 private ranges (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) in this field."
   }
 }
 
@@ -64,4 +64,10 @@ variable "cluster_enabled_log_types" {
 variable "tags" {
   description = "Tags applied to all resources created by this module."
   type        = map(string)
+}
+
+variable "addon_versions" {
+  description = "Explicit version to pin per EKS addon (key = addon name: vpc-cni, kube-proxy, eks-pod-identity-agent, metrics-server). An addon left out of this map falls back to most_recent, which re-resolves on every plan and diffs whenever AWS ships a new build. Pin it here once you've captured the currently-applied version to make plans deterministic."
+  type        = map(string)
+  default     = {}
 }

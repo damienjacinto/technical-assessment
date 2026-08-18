@@ -1,4 +1,4 @@
-# One ApplicationSet for all 7 identically-shaped infra-apps -- only name
+# One ApplicationSet for all 7 identically-shaped infra-apps. Only name
 # + namespace differ, expressed as list-generator data instead of 7
 # copy-pasted files. the-redemption stays its own Application (needs an
 # extra Helm value and a different source path prefix).
@@ -12,7 +12,7 @@ spec:
     - list:
         elements:
           - name: capacity-buffer
-            namespace: kube-system
+            namespace: the-redemption
           - name: keda
             namespace: keda
           - name: argo-rollouts
@@ -25,6 +25,8 @@ spec:
             namespace: observability
           - name: kube-prometheus-stack
             namespace: observability
+          - name: karpenter-nodepools
+            namespace: kube-system
   template:
     metadata:
       name: "{{name}}"
@@ -43,9 +45,30 @@ spec:
       destination:
         server: https://kubernetes.default.svc
         namespace: "{{namespace}}"
+      ignoreDifferences:
+        - group: kyverno.io
+          kind: ClusterPolicy
+          jqPathExpressions:
+            - .spec.admission
+            - .spec.emitWarning
+            - .spec.rules[].skipBackgroundRequests
+            - .spec.rules[].validate.allowExistingViolations
+        - group: apiextensions.k8s.io
+          kind: CustomResourceDefinition
+          jqPathExpressions:
+            - .metadata.annotations
+            - .metadata.labels
+            - .spec.conversion
       syncPolicy:
         automated:
           prune: true
           selfHeal: true
         syncOptions:
           - CreateNamespace=true
+          - ServerSideApply=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m

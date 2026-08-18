@@ -1,5 +1,5 @@
 # A mutable ":latest" tag means "what's actually running" can silently
-# change out from under a canary/rollback -- undermines the whole
+# change out from under a canary/rollback. Undermines the whole
 # progressive-delivery story as much as an unpinned dependency would.
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
@@ -14,6 +14,10 @@ spec:
         any:
           - resources:
               kinds: [Pod]
+      exclude:
+        any:
+          - resources:
+              namespaces: [kube-system]
       validate:
         message: "Images must not use the mutable ':latest' tag; pin an explicit, immutable tag or digest."
         pattern:

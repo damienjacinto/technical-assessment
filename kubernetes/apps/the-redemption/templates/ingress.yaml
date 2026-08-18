@@ -1,5 +1,5 @@
 # ALB target-type ip. security-groups is the access control (IP
-# allowlist, no WAF -- alb-ip-restrict-sg.tf), read via lookup() from a
+# allowlist, no WAF, alb-ip-restrict-sg.tf), read via lookup() from a
 # Terraform-written ConfigMap since this Application is static YAML.
 {{- $ingressConfig := lookup "v1" "ConfigMap" "kube-system" "redemption-ingress-config" }}
 {{- $albSecurityGroupId := .Values.ingress.albSecurityGroupId }}
@@ -9,8 +9,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: the-redemption
-  namespace: the-redemption
+  name: {{ include "the-redemption.fullname" . }}
   labels:
     {{- include "the-redemption.labels" . | nindent 4 }}
   annotations:
@@ -21,13 +20,15 @@ metadata:
     alb.ingress.kubernetes.io/security-groups: {{ $albSecurityGroupId | quote }}
 spec:
   rules:
-    - host: {{ .Values.ingress.host }}
+    - {{- if .Values.ingress.host }}
+      host: {{ .Values.ingress.host }}
+      {{- end }}
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: the-redemption
+                name: {{ include "the-redemption.fullname" . }}
                 port:
                   number: 80

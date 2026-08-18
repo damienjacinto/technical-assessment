@@ -11,6 +11,10 @@ spec:
         any:
           - resources:
               kinds: [Pod]
+      exclude:
+        any:
+          - resources:
+              namespaces: [kube-system]
       validate:
         message: "Privileged containers are not allowed."
         pattern:

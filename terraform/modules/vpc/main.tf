@@ -1,6 +1,6 @@
 # VPC: 3 AZ, 3-tier subnetting (public/private/isolated database), NAT
 # egress. Built on terraform-aws-modules/vpc/aws rather than hand-rolled
-# resources -- the standard, heavily exercised way to do this.
+# resources. The standard, heavily exercised way to do this.
 
 locals {
   # Disjoint /16 carve-out: public /24 (ALB+NAT ENIs), private /19
@@ -26,7 +26,7 @@ locals {
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "~> 6.6" # requires AWS provider >= 6.0 -- see providers.tf
+  version = "~> 6.6" # requires AWS provider >= 6.0, see providers.tf
 
   name = "${var.name_prefix}-vpc"
   cidr = var.vpc_cidr
@@ -36,10 +36,8 @@ module "vpc" {
   private_subnets  = local.private_subnets
   database_subnets = local.database_subnets
 
-  # --- NAT: per-AZ NAT Gateway, the implemented default. -------------------
-  # See NOTES.md in this module for why "regional" NAT Gateway (the design
-  # documented in docs/ARCHITECTURE.md) is not wired in as executable HCL yet.
-  enable_nat_gateway     = var.nat_gateway_mode == "per_az"
+  # NAT: one NAT Gateway per AZ, the standard HA pattern.
+  enable_nat_gateway     = true
   single_nat_gateway     = false
   one_nat_gateway_per_az = true
 

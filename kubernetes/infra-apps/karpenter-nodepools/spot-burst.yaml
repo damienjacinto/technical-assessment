@@ -1,0 +1,57 @@
+# Absorbs everything past the baseline ceiling. The flash-sale spike
+# lands here by construction. See on-demand-baseline.yaml's header for
+# why this pair moved to GitOps while EC2NodeClass/tools stayed in
+# Terraform.
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: spot-burst
+spec:
+  weight: 50
+  template:
+    metadata:
+      labels:
+        capacity-tier: spot-burst
+    spec:
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: redemption-prod
+      requirements:
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["spot"]
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["amd64"]
+        - key: node.kubernetes.io/instance-type
+          operator: In
+          values:
+            - m6i.large
+            - m6i.xlarge
+            - m5.large
+            - m5.xlarge
+            - c6i.large
+            - c6i.xlarge
+            - m6a.large
+            - m6a.xlarge
+            - c6a.large
+            - c6a.xlarge
+        - key: topology.kubernetes.io/zone
+          operator: In
+          values:
+            - us-east-1a
+            - us-east-1b
+            - us-east-1c
+      expireAfter: 24h
+  limits:
+    cpu: "200"
+    memory: 400Gi
+  disruption:
+    consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidateAfter: 1m
+    budgets:
+      - nodes: "50%"
+      - nodes: "0"
+        schedule: "0 12 * * 5"
+        duration: 2h

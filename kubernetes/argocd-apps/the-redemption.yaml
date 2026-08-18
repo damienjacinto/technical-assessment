@@ -16,10 +16,16 @@ spec:
     path: kubernetes/apps/the-redemption
     helm:
       # environment is static/git-known; the ALB security group ID isn't
-      # (Terraform-created), so it's deliberately not set here -- see
+      # (Terraform-created), so it's deliberately not set her. See
       # templates/ingress.yaml's lookup() instead.
       valuesObject:
         environment: prod
+      # image.repository/tag: CI-built, not git-known ahead of time, and
+      # bumped independently of every other change here — kept in their
+      # own file instead of valuesObject so bumping them is a one-line
+      # diff. See override.yaml's own comment.
+      valueFiles:
+        - override.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: the-redemption
@@ -29,3 +35,10 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

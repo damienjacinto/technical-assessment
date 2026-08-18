@@ -20,48 +20,72 @@ resource "helm_release" "argocd" {
         params = {
           "server.insecure" = false
         }
-        # Local admin login (chart default) is the only auth -- access
+        # Local admin login (chart default) is the only auth, access
         # control is the IP allowlist security group below, not identity.
-      }
-      # controller: generic (HTTPS backend is enough for the browser UI);
-      # "aws" mode is only needed once the CLI needs direct gRPC. No
-      # hostname/path prefix -- access control is security-groups,
-      # shared allowlist with the-redemption's (alb-ip-restrict-sg.tf).
-      server = {
-        ingress = {
-          enabled          = true
-          ingressClassName = "alb"
-          pathType         = "Prefix"
-          annotations = {
-            "alb.ingress.kubernetes.io/scheme"           = "internet-facing"
-            "alb.ingress.kubernetes.io/target-type"      = "ip"
-            "alb.ingress.kubernetes.io/backend-protocol" = "HTTPS"
-            "alb.ingress.kubernetes.io/healthcheck-path" = "/healthz"
-            "alb.ingress.kubernetes.io/security-groups"  = var.alb_security_group_id
-          }
+        cm = {
+          # Keeps high-volume, not-user-managed resources out of the UI
+          "resource.exclusions" = yamlencode([
+            {
+              apiGroups = ["apiextensions.k8s.io"]
+              kinds     = ["CustomResourceDefinition"]
+              clusters  = ["*"]
+            },
+            {
+              apiGroups = ["wgpolicyk8s.io"]
+              kinds     = ["PolicyReport", "ClusterPolicyReport"]
+              clusters  = ["*"]
+            },
+            {
+              apiGroups = ["kyverno.io"]
+              kinds = [
+                "AdmissionReport", "ClusterAdmissionReport",
+                "BackgroundScanReport", "ClusterBackgroundScanReport",
+                "UpdateRequest"
+              ]
+              clusters = ["*"]
+            },
+            {
+              apiGroups = ["", "discovery.k8s.io", "coordination.k8s.io"]
+              kinds     = ["Endpoints", "EndpointSlice", "Event", "Lease"]
+              clusters  = ["*"]
+            }
+          ])
         }
-        resources = local.component_resources
       }
-      # BestEffort (chart default) starved repo-server of CPU on a cold
-      # start, missing its 1s liveness-probe timeout and crash-looping it.
-      # Sized for every component, same reasoning could hit any of them.
+      # No ingress, access is via kubectl port-forward, not exposed
+      # through the ALB.
+      server = {
+        resources = local.argocd_resources.server
+      }
       controller = {
-        resources = local.component_resources
+        resources = local.argocd_resources.controller
       }
       repoServer = {
-        resources = local.component_resources
+        resources = local.argocd_resources.repo_server
       }
       applicationSet = {
-        resources = local.component_resources
+        resources      = local.argocd_resources.application_set
+        livenessProbe  = { enabled = true }
+        readinessProbe = { enabled = true }
       }
       dex = {
-        resources = local.component_resources
+        resources = local.argocd_resources.dex
       }
       redis = {
-        resources = local.component_resources
+        resources      = local.argocd_resources.redis
+        livenessProbe  = { enabled = true }
+        readinessProbe = { enabled = true }
+        containerSecurityContext = {
+          runAsNonRoot = true
+        }
+      }
+      redisSecretInit = {
+        resources = local.argocd_resources.redis_secret_init
       }
       notifications = {
-        resources = local.component_resources
+        resources      = local.argocd_resources.notifications
+        livenessProbe  = { enabled = true }
+        readinessProbe = { enabled = true }
       }
       global = {
         nodeSelector = {
@@ -81,13 +105,40 @@ resource "helm_release" "argocd" {
 }
 
 locals {
-  component_resources = {
-    requests = {
-      cpu    = "100m"
-      memory = "128Mi"
+  argocd_resources = {
+    # Holds the live+desired state of every synced resource in memory
+    # by far the heaviest component.
+    controller = {
+      requests = { cpu = "500m", memory = "512Mi" }
+      limits   = { memory = "1Gi" }
     }
-    limits = {
-      memory = "256Mi"
+    repo_server = {
+      requests = { cpu = "200m", memory = "256Mi" }
+      limits   = { memory = "512Mi" }
+    }
+    server = {
+      requests = { cpu = "100m", memory = "128Mi" }
+      limits   = { memory = "256Mi" }
+    }
+    application_set = {
+      requests = { cpu = "100m", memory = "64Mi" }
+      limits   = { memory = "128Mi" }
+    }
+    dex = {
+      requests = { cpu = "50m", memory = "32Mi" }
+      limits   = { memory = "64Mi" }
+    }
+    redis = {
+      requests = { cpu = "100m", memory = "128Mi" }
+      limits   = { memory = "256Mi" }
+    }
+    notifications = {
+      requests = { cpu = "50m", memory = "32Mi" }
+      limits   = { memory = "64Mi" }
+    }
+    redis_secret_init = {
+      requests = { cpu = "50m", memory = "32Mi" }
+      limits   = { memory = "64Mi" }
     }
   }
 }

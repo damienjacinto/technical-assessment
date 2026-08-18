@@ -1,10 +1,15 @@
 # Gateway deployment (not per-node DaemonSet): the-redemption pushes OTLP
-# here directly, fanned out to Prometheus/Tempo (docs/ARCHITECTURE.md).
+# here directly, exported to Prometheus (docs/ARCHITECTURE.md).
 opentelemetry-collector:
   mode: deployment
-  replicaCount: 2
+  replicaCount: 1
 
-  # Dedicated tooling NodePool -- safe only because mode is "deployment";
+  # Chart sets no securityContext at all by default require-run-as-non-root
+  # checks the container level explicitly.
+  securityContext:
+    runAsNonRoot: true
+
+  # Dedicated tooling NodePool. Safe only because mode is "deployment";
   # a DaemonSet restricted to one NodePool would break per-node coverage.
   nodeSelector:
     karpenter.sh/nodepool: tools
@@ -19,14 +24,14 @@ opentelemetry-collector:
 
   podDisruptionBudget:
     enabled: true
-    minAvailable: 1
+    maxUnavailable: 1
 
   resources:
     requests:
-      cpu: 200m
-      memory: 256Mi
+      cpu: 250m
+      memory: 384Mi
     limits:
-      memory: 512Mi
+      memory: 768Mi
 
   config:
     receivers:
@@ -42,18 +47,11 @@ opentelemetry-collector:
       # chart's values.yaml).
       prometheus:
         endpoint: 0.0.0.0:8889
-      otlp/tempo:
-        endpoint: tempo.observability.svc.cluster.local:4317
-        tls:
-          insecure: true
     service:
       pipelines:
         metrics:
           receivers: [otlp]
           exporters: [prometheus]
-        traces:
-          receivers: [otlp]
-          exporters: [otlp/tempo]
 
   ports:
     metrics:

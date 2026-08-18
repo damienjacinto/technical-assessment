@@ -27,7 +27,6 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_alb_security_group_id"></a> [alb\_security\_group\_id](#input\_alb\_security\_group\_id) | Security group restricting this Ingress's ALB to the allowlisted IPs, e.g. local.foundation.alb\_ip\_restricted\_sg\_id via foundation's remote state. This is this Ingress's actual access control -- no WAF in front of it. | `string` | n/a | yes |
 | <a name="input_argo_app_labels"></a> [argo\_app\_labels](#input\_argo\_app\_labels) | Labels applied to the root app-of-apps Application. | `map(string)` | `{}` | no |
 | <a name="input_argocd_chart_version"></a> [argocd\_chart\_version](#input\_argocd\_chart\_version) | argo-cd Helm chart version to install. | `string` | `"10.3.3"` | no |
 | <a name="input_git_repo_url"></a> [git\_repo\_url](#input\_git\_repo\_url) | This repo's git URL, as ArgoCD Applications' source.repoURL. | `string` | n/a | yes |
