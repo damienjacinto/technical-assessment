@@ -1,7 +1,4 @@
-# Runs the exact same checks as `pre-commit run --all-files`
-# (.pre-commit-config.yaml) one source of truth, changes go there.
-
-name: CI
+name: Check
 
 on:
   push:
@@ -52,9 +49,6 @@ jobs:
 
       - name: Install terraform-docs
         env:
-          # Pinned, not `.../releases/latest`: committed READMEs were
-          # generated with this version, and formatting drifts between
-          # releases. "latest" would fail this hook on unrelated runs.
           TERRAFORM_DOCS_VERSION: v0.19.0
         run: |
           url="https://github.com/terraform-docs/terraform-docs/releases/download/${TERRAFORM_DOCS_VERSION}/terraform-docs-${TERRAFORM_DOCS_VERSION}-linux-amd64.tar.gz"
