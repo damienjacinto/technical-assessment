@@ -20,7 +20,7 @@ for arg in "$@"; do
   esac
 done
 
-interval="${INTERVAL:-20}"
+interval="${INTERVAL:-10}"
 
 print_table() {
   local nodepool_by_node

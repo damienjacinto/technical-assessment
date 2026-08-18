@@ -41,6 +41,7 @@ kube-prometheus-stack:
       additionalScrapeConfigs:
         - job_name: otel-collector
           honor_labels: true
+          scrape_interval: 10s
           kubernetes_sd_configs:
             - role: endpoints
               namespaces:
