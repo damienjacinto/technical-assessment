@@ -79,8 +79,6 @@ future `terraform/envs/staging/` would reuse those same modules as-is, just with
    to `terraform.tfvars` and edit the copy before applying:
    ```
    cd terraform/envs/prod/platform
-   cp terraform.tfvars.example terraform.tfvars
-   vim terraform.tfvars   # customize values, if necessary
    terraform init
    terraform apply
    ```
